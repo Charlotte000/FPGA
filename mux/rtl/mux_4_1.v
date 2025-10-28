@@ -15,60 +15,57 @@
 
 // PROGRAM		"Quartus Prime"
 // VERSION		"Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition"
-// CREATED		"Tue Oct 28 20:15:56 2025"
+// CREATED		"Tue Oct 28 20:16:44 2025"
 
-module mux(
-	direction_0_i,
+module mux_4_1(
+	data0_i,
+	data1_i,
+	data2_i,
+	data3_i,
 	direction_1_i,
-	data0_0_i,
-	data1_0_i,
-	data2_0_i,
-	data3_0_i,
-	data0_1_i,
-	data1_1_i,
-	data2_1_i,
-	data3_1_i,
-	data_1_o,
-	data_0_o
+	direction_0_i,
+	data_o
 );
 
 
-input wire	direction_0_i;
+input wire	data0_i;
+input wire	data1_i;
+input wire	data2_i;
+input wire	data3_i;
 input wire	direction_1_i;
-input wire	data0_0_i;
-input wire	data1_0_i;
-input wire	data2_0_i;
-input wire	data3_0_i;
-input wire	data0_1_i;
-input wire	data1_1_i;
-input wire	data2_1_i;
-input wire	data3_1_i;
-output wire	data_1_o;
-output wire	data_0_o;
+input wire	direction_0_i;
+output wire	data_o;
+
+wire	SYNTHESIZED_WIRE_0;
+wire	SYNTHESIZED_WIRE_1;
+wire	SYNTHESIZED_WIRE_2;
+wire	SYNTHESIZED_WIRE_3;
+wire	SYNTHESIZED_WIRE_4;
+wire	SYNTHESIZED_WIRE_5;
+wire	SYNTHESIZED_WIRE_6;
+wire	SYNTHESIZED_WIRE_7;
 
 
 
 
+assign	SYNTHESIZED_WIRE_4 = SYNTHESIZED_WIRE_0 & data0_i;
+
+assign	SYNTHESIZED_WIRE_7 = SYNTHESIZED_WIRE_1 & data1_i;
+
+assign	SYNTHESIZED_WIRE_5 = SYNTHESIZED_WIRE_2 & data2_i;
+
+assign	SYNTHESIZED_WIRE_6 = SYNTHESIZED_WIRE_3 & data3_i;
 
 
-mux_4_1	b2v_mux_0(
-	.direction_1_i(direction_1_i),
-	.direction_0_i(direction_0_i),
-	.data0_i(data0_0_i),
-	.data1_i(data1_0_i),
-	.data2_i(data2_0_i),
-	.data3_i(data3_0_i),
-	.data_o(data_0_o));
+decoder	b2v_inst(
+	.data_1_i(direction_1_i),
+	.data_0_i(direction_0_i),
+	.decoder_0_o(SYNTHESIZED_WIRE_0),
+	.decoder_1_o(SYNTHESIZED_WIRE_1),
+	.decoder_2_o(SYNTHESIZED_WIRE_2),
+	.decoder_3_o(SYNTHESIZED_WIRE_3));
 
-
-mux_4_1	b2v_mux_1(
-	.direction_1_i(direction_1_i),
-	.direction_0_i(direction_0_i),
-	.data0_i(data0_1_i),
-	.data1_i(data1_1_i),
-	.data2_i(data2_1_i),
-	.data3_i(data3_1_i),
-	.data_o(data_1_o));
+assign	data_o = SYNTHESIZED_WIRE_4 | SYNTHESIZED_WIRE_5 | SYNTHESIZED_WIRE_6 | SYNTHESIZED_WIRE_7;
 
 
 endmodule

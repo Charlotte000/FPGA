@@ -15,60 +15,42 @@
 
 // PROGRAM		"Quartus Prime"
 // VERSION		"Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition"
-// CREATED		"Tue Oct 28 20:15:56 2025"
+// CREATED		"Tue Oct 28 20:17:02 2025"
 
-module mux(
-	direction_0_i,
-	direction_1_i,
-	data0_0_i,
-	data1_0_i,
-	data2_0_i,
-	data3_0_i,
-	data0_1_i,
-	data1_1_i,
-	data2_1_i,
-	data3_1_i,
-	data_1_o,
-	data_0_o
+module decoder(
+	data_1_i,
+	data_0_i,
+	decoder_0_o,
+	decoder_1_o,
+	decoder_2_o,
+	decoder_3_o
 );
 
 
-input wire	direction_0_i;
-input wire	direction_1_i;
-input wire	data0_0_i;
-input wire	data1_0_i;
-input wire	data2_0_i;
-input wire	data3_0_i;
-input wire	data0_1_i;
-input wire	data1_1_i;
-input wire	data2_1_i;
-input wire	data3_1_i;
-output wire	data_1_o;
-output wire	data_0_o;
+input wire	data_1_i;
+input wire	data_0_i;
+output wire	decoder_0_o;
+output wire	decoder_1_o;
+output wire	decoder_2_o;
+output wire	decoder_3_o;
+
+wire	SYNTHESIZED_WIRE_4;
+wire	SYNTHESIZED_WIRE_5;
 
 
 
 
+assign	decoder_0_o = SYNTHESIZED_WIRE_4 & SYNTHESIZED_WIRE_5;
 
+assign	decoder_1_o = data_0_i & SYNTHESIZED_WIRE_5;
 
-mux_4_1	b2v_mux_0(
-	.direction_1_i(direction_1_i),
-	.direction_0_i(direction_0_i),
-	.data0_i(data0_0_i),
-	.data1_i(data1_0_i),
-	.data2_i(data2_0_i),
-	.data3_i(data3_0_i),
-	.data_o(data_0_o));
+assign	decoder_2_o = SYNTHESIZED_WIRE_4 & data_1_i;
 
+assign	decoder_3_o = data_0_i & data_1_i;
 
-mux_4_1	b2v_mux_1(
-	.direction_1_i(direction_1_i),
-	.direction_0_i(direction_0_i),
-	.data0_i(data0_1_i),
-	.data1_i(data1_1_i),
-	.data2_i(data2_1_i),
-	.data3_i(data3_1_i),
-	.data_o(data_1_o));
+assign	SYNTHESIZED_WIRE_4 =  ~data_0_i;
+
+assign	SYNTHESIZED_WIRE_5 =  ~data_1_i;
 
 
 endmodule
