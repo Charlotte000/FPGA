@@ -1,6 +1,11 @@
+# Quartus
 db
 incremental_db
 output_files
 c5_pin_model_dump.txt
 work
 vsim.wlf
+*.qws
+
+# ModelSim
+transcript
