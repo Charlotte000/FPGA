@@ -15,7 +15,7 @@
 
 // PROGRAM		"Quartus Prime"
 // VERSION		"Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition"
-// CREATED		"Mon Nov  3 11:48:35 2025"
+// CREATED		"Wed Nov  5 14:33:00 2025"
 
 module priority_encoder_4(
 	data_0_i,
@@ -50,9 +50,8 @@ output wire	data_right_2_o;
 output wire	data_right_3_o;
 output wire	data_val_o;
 
-wire	SYNTHESIZED_WIRE_0;
-wire	SYNTHESIZED_WIRE_1;
 
+assign	data_val_o = data_val_i;
 
 
 
@@ -65,11 +64,10 @@ priority_left_4	b2v_left(
 	.data_left_3_o(data_left_3_o),
 	.data_left_2_o(data_left_2_o),
 	.data_left_1_o(data_left_1_o),
-	.data_left_0_o(data_left_0_o),
-	.data_val_o(SYNTHESIZED_WIRE_0));
+	.data_left_0_o(data_left_0_o));
 
 
-priority_left_4	b2v_left2(
+priority_left_4	b2v_right(
 	.data_3_i(data_0_i),
 	.data_2_i(data_1_i),
 	.data_1_i(data_2_i),
@@ -77,10 +75,7 @@ priority_left_4	b2v_left2(
 	.data_left_3_o(data_right_0_o),
 	.data_left_2_o(data_right_1_o),
 	.data_left_1_o(data_right_2_o),
-	.data_left_0_o(data_right_3_o),
-	.data_val_o(SYNTHESIZED_WIRE_1));
-
-assign	data_val_o = SYNTHESIZED_WIRE_0 & SYNTHESIZED_WIRE_1 & data_val_i;
+	.data_left_0_o(data_right_3_o));
 
 
 endmodule

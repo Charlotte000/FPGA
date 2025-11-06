@@ -80,13 +80,6 @@ on the Quartus Prime software download page.
 		(text "data_left_0_o" (rect 88 75 171 89)(font "Intel Clear" (font_size 8)))
 		(line (pt 192 80)(pt 176 80))
 	)
-	(port
-		(pt 192 96)
-		(output)
-		(text "data_val_o" (rect 0 0 66 14)(font "Intel Clear" (font_size 8)))
-		(text "data_val_o" (rect 105 91 171 105)(font "Intel Clear" (font_size 8)))
-		(line (pt 192 96)(pt 176 96))
-	)
 	(drawing
 		(rectangle (rect 16 16 176 112))
 	)
