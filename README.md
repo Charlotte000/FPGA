@@ -26,3 +26,14 @@ FPGA labs
 | data_left_o  | output    | 4        | The output leftmost bit     |
 | data_right_o | output    | 4        | The output rightmost bit    |
 | data_val_o   | output    | 1        | Validity of the output data |
+
+## Task 3 Delay line
+[delay_15](./delay_15)
+
+| Signal       | Direction | Bit size | Comment                                            |
+|--------------|-----------|----------|----------------------------------------------------|
+| clk_i        | input     | 1        | Clock signal                                       |
+| rst_i        | input     | 1        | Asynchronous reset                                 |
+| data_i       | input     | 1        | Input data                                         |
+| data_delay_i | input     | 4        | Number of clock cycles for delay                   |
+| data_o       | output    | 1        | data_i signal delayed by data_delay_i clock cycles |
