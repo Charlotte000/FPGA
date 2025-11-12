@@ -15,7 +15,7 @@
 
 // PROGRAM		"Quartus Prime"
 // VERSION		"Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition"
-// CREATED		"Sat Nov  8 19:02:33 2025"
+// CREATED		"Tue Nov 11 17:47:08 2025"
 
 module queue_15(
 	data_i,
@@ -31,28 +31,15 @@ input wire	rst_i;
 output wire	[15:0] data_o;
 
 reg	[15:0] data_o_ALTERA_SYNTHESIZED;
-wire	SYNTHESIZED_WIRE_16;
+wire	SYNTHESIZED_WIRE_15;
 
 
 
 
 
-always@(posedge clk_i or negedge SYNTHESIZED_WIRE_16)
+always@(posedge clk_i or negedge SYNTHESIZED_WIRE_15)
 begin
-if (!SYNTHESIZED_WIRE_16)
-	begin
-	data_o_ALTERA_SYNTHESIZED[0] <= 0;
-	end
-else
-	begin
-	data_o_ALTERA_SYNTHESIZED[0] <= data_i;
-	end
-end
-
-
-always@(posedge clk_i or negedge SYNTHESIZED_WIRE_16)
-begin
-if (!SYNTHESIZED_WIRE_16)
+if (!SYNTHESIZED_WIRE_15)
 	begin
 	data_o_ALTERA_SYNTHESIZED[1] <= 0;
 	end
@@ -63,9 +50,9 @@ else
 end
 
 
-always@(posedge clk_i or negedge SYNTHESIZED_WIRE_16)
+always@(posedge clk_i or negedge SYNTHESIZED_WIRE_15)
 begin
-if (!SYNTHESIZED_WIRE_16)
+if (!SYNTHESIZED_WIRE_15)
 	begin
 	data_o_ALTERA_SYNTHESIZED[10] <= 0;
 	end
@@ -76,9 +63,9 @@ else
 end
 
 
-always@(posedge clk_i or negedge SYNTHESIZED_WIRE_16)
+always@(posedge clk_i or negedge SYNTHESIZED_WIRE_15)
 begin
-if (!SYNTHESIZED_WIRE_16)
+if (!SYNTHESIZED_WIRE_15)
 	begin
 	data_o_ALTERA_SYNTHESIZED[11] <= 0;
 	end
@@ -89,9 +76,9 @@ else
 end
 
 
-always@(posedge clk_i or negedge SYNTHESIZED_WIRE_16)
+always@(posedge clk_i or negedge SYNTHESIZED_WIRE_15)
 begin
-if (!SYNTHESIZED_WIRE_16)
+if (!SYNTHESIZED_WIRE_15)
 	begin
 	data_o_ALTERA_SYNTHESIZED[12] <= 0;
 	end
@@ -102,9 +89,9 @@ else
 end
 
 
-always@(posedge clk_i or negedge SYNTHESIZED_WIRE_16)
+always@(posedge clk_i or negedge SYNTHESIZED_WIRE_15)
 begin
-if (!SYNTHESIZED_WIRE_16)
+if (!SYNTHESIZED_WIRE_15)
 	begin
 	data_o_ALTERA_SYNTHESIZED[13] <= 0;
 	end
@@ -115,9 +102,9 @@ else
 end
 
 
-always@(posedge clk_i or negedge SYNTHESIZED_WIRE_16)
+always@(posedge clk_i or negedge SYNTHESIZED_WIRE_15)
 begin
-if (!SYNTHESIZED_WIRE_16)
+if (!SYNTHESIZED_WIRE_15)
 	begin
 	data_o_ALTERA_SYNTHESIZED[14] <= 0;
 	end
@@ -128,9 +115,9 @@ else
 end
 
 
-always@(posedge clk_i or negedge SYNTHESIZED_WIRE_16)
+always@(posedge clk_i or negedge SYNTHESIZED_WIRE_15)
 begin
-if (!SYNTHESIZED_WIRE_16)
+if (!SYNTHESIZED_WIRE_15)
 	begin
 	data_o_ALTERA_SYNTHESIZED[15] <= 0;
 	end
@@ -141,9 +128,9 @@ else
 end
 
 
-always@(posedge clk_i or negedge SYNTHESIZED_WIRE_16)
+always@(posedge clk_i or negedge SYNTHESIZED_WIRE_15)
 begin
-if (!SYNTHESIZED_WIRE_16)
+if (!SYNTHESIZED_WIRE_15)
 	begin
 	data_o_ALTERA_SYNTHESIZED[2] <= 0;
 	end
@@ -154,9 +141,9 @@ else
 end
 
 
-always@(posedge clk_i or negedge SYNTHESIZED_WIRE_16)
+always@(posedge clk_i or negedge SYNTHESIZED_WIRE_15)
 begin
-if (!SYNTHESIZED_WIRE_16)
+if (!SYNTHESIZED_WIRE_15)
 	begin
 	data_o_ALTERA_SYNTHESIZED[3] <= 0;
 	end
@@ -167,9 +154,9 @@ else
 end
 
 
-always@(posedge clk_i or negedge SYNTHESIZED_WIRE_16)
+always@(posedge clk_i or negedge SYNTHESIZED_WIRE_15)
 begin
-if (!SYNTHESIZED_WIRE_16)
+if (!SYNTHESIZED_WIRE_15)
 	begin
 	data_o_ALTERA_SYNTHESIZED[4] <= 0;
 	end
@@ -180,9 +167,9 @@ else
 end
 
 
-always@(posedge clk_i or negedge SYNTHESIZED_WIRE_16)
+always@(posedge clk_i or negedge SYNTHESIZED_WIRE_15)
 begin
-if (!SYNTHESIZED_WIRE_16)
+if (!SYNTHESIZED_WIRE_15)
 	begin
 	data_o_ALTERA_SYNTHESIZED[5] <= 0;
 	end
@@ -193,9 +180,9 @@ else
 end
 
 
-always@(posedge clk_i or negedge SYNTHESIZED_WIRE_16)
+always@(posedge clk_i or negedge SYNTHESIZED_WIRE_15)
 begin
-if (!SYNTHESIZED_WIRE_16)
+if (!SYNTHESIZED_WIRE_15)
 	begin
 	data_o_ALTERA_SYNTHESIZED[6] <= 0;
 	end
@@ -206,9 +193,9 @@ else
 end
 
 
-always@(posedge clk_i or negedge SYNTHESIZED_WIRE_16)
+always@(posedge clk_i or negedge SYNTHESIZED_WIRE_15)
 begin
-if (!SYNTHESIZED_WIRE_16)
+if (!SYNTHESIZED_WIRE_15)
 	begin
 	data_o_ALTERA_SYNTHESIZED[7] <= 0;
 	end
@@ -219,9 +206,9 @@ else
 end
 
 
-always@(posedge clk_i or negedge SYNTHESIZED_WIRE_16)
+always@(posedge clk_i or negedge SYNTHESIZED_WIRE_15)
 begin
-if (!SYNTHESIZED_WIRE_16)
+if (!SYNTHESIZED_WIRE_15)
 	begin
 	data_o_ALTERA_SYNTHESIZED[8] <= 0;
 	end
@@ -232,9 +219,9 @@ else
 end
 
 
-always@(posedge clk_i or negedge SYNTHESIZED_WIRE_16)
+always@(posedge clk_i or negedge SYNTHESIZED_WIRE_15)
 begin
-if (!SYNTHESIZED_WIRE_16)
+if (!SYNTHESIZED_WIRE_15)
 	begin
 	data_o_ALTERA_SYNTHESIZED[9] <= 0;
 	end
@@ -244,8 +231,9 @@ else
 	end
 end
 
-assign	SYNTHESIZED_WIRE_16 =  ~rst_i;
+assign	SYNTHESIZED_WIRE_15 =  ~rst_i;
 
 assign	data_o = data_o_ALTERA_SYNTHESIZED;
+assign	data_o_ALTERA_SYNTHESIZED[0] = data_i;
 
 endmodule

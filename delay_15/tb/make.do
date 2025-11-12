@@ -9,5 +9,12 @@ vlog -sv delay_15_tb.sv
 
 vsim -novopt delay_15_tb
 add log -r /*
-add wave -r *
+
+# add wave -r *
+add wave /delay_15_tb/clk
+add wave /delay_15_tb/rst
+add wave /delay_15_tb/data_i
+add wave /delay_15_tb/data_delay_i
+add wave /delay_15_tb/data_o
+
 run -all

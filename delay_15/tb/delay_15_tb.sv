@@ -1,12 +1,17 @@
-module delay_15_tb;
+`timescale 1ns/1ps
+`define PERIOD 6.666
 
-bit         clk;
-bit         rst;
+module delay_15_tb #(
+  parameter DELAY_W = 4
+);
 
-logic       data_i;
-logic [3:0] data_delay_i;
+bit                 clk;
+bit                 rst;
 
-logic       data_o;
+logic               data_i;
+logic [DELAY_W-1:0] data_delay_i;
+
+logic               data_o;
 
 delay_15 DUT (
   .clk_i        ( clk          ),
@@ -17,17 +22,17 @@ delay_15 DUT (
 );
 
 task reset();
-  rst = 1;
-  ##1;
-  rst = 0;
-  ##0;
+  ##1 rst = 1;
+  ##1 rst = 0;
 endtask
 
 task test_case(
-  input logic       data,
-  input logic [3:0] data_delay
+  input logic               data,
+  input logic [DELAY_W-1:0] data_delay
 );
+  data_i       = data;
   data_delay_i = data_delay;
+  // #0.001;
 
   for( int i = 0; i < data_delay; i++ )
     begin
@@ -35,7 +40,6 @@ task test_case(
       ##1;
     end
 
-  ##1;
   if( data_o !== data )
     begin
       $display( "Test Failed: ( data_delay_i = %b ) expected %b but got %b", data_delay_i, data, data_o );
@@ -45,7 +49,7 @@ endtask
 
 initial
   forever
-    #10 clk = !clk;
+    #( `PERIOD / 2 ) clk = !clk;
 
 default clocking cb @ ( posedge clk );
 endclocking
@@ -53,10 +57,10 @@ endclocking
 initial
   begin
     reset();
-    data_delay_i = 4'b0001;
+    data_delay_i = 1;
 
     for( int i = 0; i < 100; i++ )
-      test_case( $urandom_range(1, 0), $urandom_range(15, 1) );
+      test_case( $urandom_range( 1, 0 ), $urandom_range( 2 ** DELAY_W - 1, 0 ) );
 
     $display( "Tests Passed" );
     $stop;
