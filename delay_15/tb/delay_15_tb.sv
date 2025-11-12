@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
-`define PERIOD 6.666
 
 module delay_15_tb #(
+  parameter PERIOD  = 6.666,
   parameter DELAY_W = 4
 );
 
@@ -32,7 +32,7 @@ task test_case(
 );
   data_i       = data;
   data_delay_i = data_delay;
-  // #0.001;
+  #0.001;
 
   for( int i = 0; i < data_delay; i++ )
     begin
@@ -49,7 +49,7 @@ endtask
 
 initial
   forever
-    #( `PERIOD / 2 ) clk = !clk;
+    #( PERIOD / 2 ) clk = !clk;
 
 default clocking cb @ ( posedge clk );
 endclocking
