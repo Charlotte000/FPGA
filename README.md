@@ -37,3 +37,13 @@ FPGA labs
 | data_i       | input     | 1        | Input data                                         |
 | data_delay_i | input     | 4        | Number of clock cycles for delay                   |
 | data_o       | output    | 1        | data_i signal delayed by data_delay_i clock cycles |
+
+## Task 4 CRC-16-ANSI
+[crc_16_ansi](./crc_16_ansi)
+
+| Signal       | Direction | Bit size | Comment                                 |
+|--------------|-----------|----------|-----------------------------------------|
+| clk_i        | input     | 1        | Clock signal                            |
+| rst_i        | input     | 1        | Asynchronous reset                      |
+| data_i       | input     | 1        | Input data                              |
+| data_o       | output    | 16       | The result of the CRC-16-ANSI algorithm |
