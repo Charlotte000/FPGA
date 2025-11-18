@@ -47,3 +47,19 @@ FPGA labs
 | rst_i        | input     | 1        | Asynchronous reset                      |
 | data_i       | input     | 1        | Input data                              |
 | data_o       | output    | 16       | The result of the CRC-16-ANSI algorithm |
+
+# Lab1
+
+## Task 1 Serializer
+[serializer](./serializer)
+
+| Signal         | Direction | Bit size | Comment                      |
+|----------------|-----------|----------|------------------------------|
+| clk_i          | input     | 1        | Clock signal                 |
+| srst_i         | input     | 1        | Synchronous reset            |
+| data_i         | input     | 16       | Input data                   |
+| data_mod_i     | input     | 4        | The number of valid bits     |
+| data_val_i     | input     | 1        | Is data valid                |
+| ser_data_o     | output    | 1        | Serialized data              |
+| ser_data_val_o | output    | 1        | Is ser_data_o valid          |
+| busy_o         | output    | 1        | Is serialization module busy |
