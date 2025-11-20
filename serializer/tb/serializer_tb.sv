@@ -20,7 +20,12 @@ logic              ser_data_val_o;
 
 logic              busy_o;
 
-serializer #( DATA_W, MOD_W, MOD_IGNORE_LO, MOD_IGNORE_HI ) DUT (
+serializer #(
+  .DATA_W        ( DATA_W        ),
+  .MOD_W         ( MOD_W         ),
+  .MOD_IGNORE_LO ( MOD_IGNORE_LO ),
+  .MOD_IGNORE_HI ( MOD_IGNORE_HI )
+) DUT (
   .clk_i          ( clk            ),
   .srst_i         ( srst           ),
   .data_i         ( data_i         ),
