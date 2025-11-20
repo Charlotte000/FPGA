@@ -32,15 +32,15 @@ endtask
 task automatic init_transmit();
   data_buffer  <= data_i;
   counter_curr <= 1;
-  counter_max  <= ( data_mod_i == 0 ) ? ( DATA_W - 1 ) : ( data_mod_i );
-  busy         <= ( MOD_IGNORE_LO <= data_mod_i && data_mod_i <= MOD_IGNORE_HI ) ? ( 0 ) : ( 1 );
+  counter_max  <= ( data_mod_i - 1 ); // 4'b0000 - 1 = 4'b1111
+  busy         <= !( ( MOD_IGNORE_LO <= data_mod_i ) && ( data_mod_i <= MOD_IGNORE_HI ) );
 endtask
 
 task automatic transmit();
-  if( busy && ( counter_curr < counter_max ) )
+  if( busy && ( counter_curr <= counter_max ) )
     begin
-      counter_curr <= counter_curr + 1;
-      data_buffer  <= data_buffer << 1;
+      counter_curr <= ( counter_curr + 1 );
+      data_buffer  <= ( data_buffer << 1 );
     end
   else
     busy   <= 0;
