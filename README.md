@@ -63,3 +63,15 @@ FPGA labs
 | ser_data_o     | output    | 1        | Serialized data              |
 | ser_data_val_o | output    | 1        | Is ser_data_o valid          |
 | busy_o         | output    | 1        | Is serialization module busy |
+
+## Task 2 Deserializer
+[deserializer](./deserializer)
+
+| Signal           | Direction | Bit size | Comment               |
+|------------------|-----------|----------|-----------------------|
+| clk_i            | input     | 1        | Clock signal          |
+| srst_i           | input     | 1        | Synchronous reset     |
+| data_i           | input     | 1        | Input data            |
+| data_val_i       | input     | 1        | Is data valid         |
+| deser_data_o     | output    | 16       | Deserialized data     |
+| deser_data_val_o | output    | 1        | Is deser_data_o valid |
