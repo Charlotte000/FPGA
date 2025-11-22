@@ -75,3 +75,20 @@ FPGA labs
 | data_val_i       | input     | 1        | Is data valid         |
 | deser_data_o     | output    | 16       | Deserialized data     |
 | deser_data_val_o | output    | 1        | Is deser_data_o valid |
+
+## Task 3 Priority Encoder
+[priority_encoder](./priority_encoder)
+
+| Parameter | Comment    |
+|-----------|------------|
+| WIDTH     | Data width |
+
+| Signal       | Direction | Bit size | Comment                  |
+|--------------|-----------|----------|--------------------------|
+| clk_i        | input     | 1        | Clock signal             |
+| srst_i       | input     | 1        | Synchronous reset        |
+| data_i       | input     | WIDTH    | Input data               |
+| data_val_i   | input     | 1        | Is data valid            |
+| data_left_o  | output    | WIDTH    | The output leftmost bit  |
+| data_right_o | output    | WIDTH    | The output rightmost bit |
+| data_val_o   | output    | 1        | Is data_o valid          |
