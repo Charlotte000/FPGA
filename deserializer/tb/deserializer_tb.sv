@@ -1,9 +1,8 @@
 `timescale 1ns/1ns
 
 module deserializer_tb #(
-  parameter PERIOD     = 10,
-  parameter HIT_CHANCE = 50,
-  parameter DATA_W     = 16
+  parameter PERIOD = 10,
+  parameter DATA_W = 16
 );
 
 bit                clk;
@@ -45,13 +44,13 @@ task automatic check(
     end
 endtask
 
-task automatic test_case( input logic [DATA_W-1:0] data );
+task automatic test_case( input logic [DATA_W-1:0] data, input int hit_chance );
   int i;
 
   i = DATA_W - 1;
   while( i >= 0 )
     begin
-      if( $urandom_range( 100, 1 ) <= HIT_CHANCE )
+      if( $urandom_range( 100, 1 ) <= hit_chance )
         begin
           data_i     <= data[i];
           data_val_i <= 1;
@@ -84,7 +83,10 @@ initial
     reset();
 
     repeat( 100 )
-      test_case( $urandom_range( 2 ** DATA_W - 1, 0) );
+      test_case( $urandom_range( 2 ** DATA_W - 1, 0), 100 );
+
+    repeat( 100 )
+      test_case( $urandom_range( 2 ** DATA_W - 1, 0), 50 );
 
     $display( "Tests Passed" );
     $stop;
