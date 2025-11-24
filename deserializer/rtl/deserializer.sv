@@ -23,11 +23,8 @@ assign deser_data_o = data_buffer;
 
 always_ff @( posedge clk_i )
   begin
-    if( srst_i )
-      data_buffer <= '0;
-    else
-      if( data_val_i )
-        data_buffer <= ( ( data_buffer << 1 ) | data_i );
+    if( data_val_i )
+      data_buffer <= ( ( data_buffer << 1 ) | data_i );
   end
 
 always_ff @( posedge clk_i )
@@ -37,17 +34,20 @@ always_ff @( posedge clk_i )
     else
       if( data_val_i )
         if( !counter_end )
-          counter <= COUNTER_W'( counter + 1 );
+          counter <= ( counter + 1'b1 );
         else
           counter <= 0;
   end
 
 always_ff @( posedge clk_i )
   begin
-    if( data_val_i && counter_end )
-      deser_data_val_o <= 1;
-    else
+    if( srst_i )
       deser_data_val_o <= 0;
+    else
+      if( data_val_i && counter_end )
+        deser_data_val_o <= 1;
+      else
+        deser_data_val_o <= 0;
   end
 
 endmodule

@@ -1,8 +1,9 @@
 `timescale 1ns/1ns
 
 module deserializer_tb #(
-  parameter PERIOD = 10,
-  parameter DATA_W = 16
+  parameter PERIOD     = 10,
+  parameter HIT_CHANCE = 50,
+  parameter DATA_W     = 16
 );
 
 bit                clk;
@@ -29,7 +30,6 @@ task automatic reset();
   srst <= 1;
   @( posedge clk );
   srst <= 0;
-  // @( posedge clk );
 endtask
 
 task automatic check(
@@ -46,11 +46,24 @@ task automatic check(
 endtask
 
 task automatic test_case( input logic [DATA_W-1:0] data );
-  for( int i = DATA_W - 1; i >= 0; i-- )
+  int i;
+
+  i = DATA_W - 1;
+  while( i >= 0 )
     begin
-      data_i     <= data[i];
-      data_val_i <= 1;
-      @( posedge clk );
+      if( $urandom_range( 100, 1 ) <= HIT_CHANCE )
+        begin
+          data_i     <= data[i];
+          data_val_i <= 1;
+          @( posedge clk );
+          i--;
+        end
+      else
+        begin
+          data_val_i <= 0;
+          @( posedge clk );
+        end
+
       check( "deser_data_val_o", deser_data_val_o, 0, $sformatf( "( data = %b, i = %0d )", data, i ) );
     end
 
@@ -64,6 +77,7 @@ endtask
 initial
   forever
     #( PERIOD / 2 ) clk = !clk;
+
 initial
   begin
     data_val_i = 0;
