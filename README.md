@@ -92,3 +92,19 @@ FPGA labs
 | data_left_o  | output    | WIDTH    | The output leftmost bit  |
 | data_right_o | output    | WIDTH    | The output rightmost bit |
 | data_val_o   | output    | 1        | Is data_o valid          |
+
+## Task 4 Bit Population Counter
+[bit_population_counter_tb](./bit_population_counter_tb)
+
+| Parameter | Comment    |
+|-----------|------------|
+| WIDTH     | Data width |
+
+| Signal     | Direction | Bit size          | Comment           |
+|------------|-----------|-------------------|-------------------|
+| clk_i      | input     | 1                 | Clock signal      |
+| srst_i     | input     | 1                 | Synchronous reset |
+| data_i     | input     | WIDTH             | Input data        |
+| data_val_i | input     | 1                 | Is data_i valid   |
+| data_o     | output    | $clog2(WIDTH) + 1 | Output data       |
+| data_val_o | output    | 1                 | Is data_o valid   |
