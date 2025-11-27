@@ -3,7 +3,7 @@
 module bit_population_counter_tb #(
   parameter PERIOD    = 10,
   parameter WIDTH     = 128,
-  parameter PIPE_SIZE = 1
+  parameter PIPE_SIZE = 16
 );
 
 bit                     clk;
@@ -41,15 +41,24 @@ task automatic check( input bit result, input string error_msg );
     end
 endtask
 
-task automatic test_case( input logic [WIDTH-1:0] data );
+task automatic test_case( input logic [WIDTH-1:0] data, input int unsigned break_chance );
   data_i     <= data;
   data_val_i <= 1;
   @( posedge clk );
 
+  data_i     <= 'x;
   data_val_i <= 0;
-  while( !data_val_o )
-    @( posedge clk );
+  repeat( ( WIDTH / PIPE_SIZE ) + 1 )
+    begin
+      if( $urandom_range( 100, 1 ) <= break_chance )
+          return;
+      @( posedge clk );
+    end
 
+  check(
+    data_val_o == 1,
+    $sformatf( "Test Failed: ( data = %b ) expected %s = %0d but got %0d", data, "data_val_o", 1, data_val_o )
+  );
   check(
     data_o == $countones(data),
     $sformatf( "Test Failed: ( data = %b ) expected %s = %0d but got %0d", data, "data_o", $countones(data), data_o )
@@ -58,7 +67,7 @@ endtask
 
 initial
   forever
-    #( PERIOD / 2 ) clk = !clk;
+    #( PERIOD / 2 ) clk = ( !clk );
 
 initial
   begin
@@ -66,10 +75,13 @@ initial
     reset();
 
     for( int i = 0; i <= WIDTH; i++ )
-      test_case( ( ( WIDTH )'( 1 ) << i ) - 1'b1 );
+      test_case( ( ( WIDTH )'( 1 ) << i ) - 1'b1, 0 );
 
     repeat( 100 )
-      test_case( $urandom_range( ( 2 ** WIDTH ) - 1, 0) );
+      test_case( $urandom_range( ( 2 ** WIDTH ) - 1, 0), 0 );
+
+    repeat( 100 )
+      test_case( $urandom_range( ( 2 ** WIDTH ) - 1, 0), 50 );
 
     $display( "Tests Passed" );
     $stop;
