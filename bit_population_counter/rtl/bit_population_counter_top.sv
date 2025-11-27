@@ -1,5 +1,6 @@
 module bit_population_counter_top #(
-  parameter WIDTH = 16
+  parameter WIDTH     = 128,
+  parameter PIPE_SIZE = 1
 )(
   input  logic                   clk_150_mhz_i,
   input  logic                   srst_i,
@@ -18,7 +19,8 @@ logic [$clog2(WIDTH):0] data_out;
 logic                   data_val_out;
 
 bit_population_counter #(
-  .WIDTH ( WIDTH )
+  .WIDTH     ( WIDTH     ),
+  .PIPE_SIZE ( PIPE_SIZE )
 ) bit_counter_inst (
   .clk_i      ( clk_150_mhz_i ),
   .srst_i     ( srst          ),

@@ -7,5 +7,6 @@ vsim -novopt bit_population_counter_tb
 add log -r /*
 
 do wave.do
+# add wave -r *
 
 run -all

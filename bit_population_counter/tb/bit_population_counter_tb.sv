@@ -1,8 +1,9 @@
 `timescale 1ns/1ns
 
 module bit_population_counter_tb #(
-  parameter PERIOD = 10,
-  parameter WIDTH  = 16
+  parameter PERIOD    = 10,
+  parameter WIDTH     = 128,
+  parameter PIPE_SIZE = 1
 );
 
 bit                     clk;
@@ -14,7 +15,10 @@ logic                   data_val_i;
 logic [$clog2(WIDTH):0] data_o;
 logic                   data_val_o;
 
-bit_population_counter #( .WIDTH ( WIDTH ) ) DUT (
+bit_population_counter #(
+  .WIDTH     ( WIDTH     ),
+  .PIPE_SIZE ( PIPE_SIZE )
+) DUT (
   .clk_i      ( clk        ),
   .srst_i     ( srst       ),
   .data_i     ( data_i     ),
@@ -37,33 +41,18 @@ task automatic check( input bit result, input string error_msg );
     end
 endtask
 
-function automatic int count_bits( input logic [WIDTH-1:0] data );
-  int count;
-  count = 0;
-  foreach( data[i] )
-    count += data[i];
-
-  return count;
-endfunction
-
 task automatic test_case( input logic [WIDTH-1:0] data );
   data_i     <= data;
   data_val_i <= 1;
   @( posedge clk );
-  check(
-    data_val_o == 0,
-    $sformatf( "Test Failed: ( data = %b ) expected %s = %b but got %b", data, "data_val_o", 1'b0, data_val_o )
-  );
 
   data_val_i <= 0;
-  @( posedge clk );
+  while( !data_val_o )
+    @( posedge clk );
+
   check(
-    data_val_o == 1,
-    $sformatf( "Test Failed: ( data = %b ) expected %s = %b but got %b", data, "data_val_o", 1'b1, data_val_o )
-  );
-  check(
-    data_o == count_bits(data),
-    $sformatf( "Test Failed: ( data = %b ) expected %s = %0d but got %0d", data, "data_o", count_bits(data), data_o )
+    data_o == $countones(data),
+    $sformatf( "Test Failed: ( data = %b ) expected %s = %0d but got %0d", data, "data_o", $countones(data), data_o )
   );
 endtask
 
@@ -76,11 +65,8 @@ initial
     data_val_i = 0;
     reset();
 
-    test_case( 4'b0000 );
-    test_case( 4'b0001 );
-    test_case( 4'b0011 );
-    test_case( 4'b0111 );
-    test_case( 4'b1111 );
+    for( int i = 0; i <= WIDTH; i++ )
+      test_case( ( ( WIDTH )'( 1 ) << i ) - 1'b1 );
 
     repeat( 100 )
       test_case( $urandom_range( ( 2 ** WIDTH ) - 1, 0) );
