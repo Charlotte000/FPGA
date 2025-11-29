@@ -8,7 +8,7 @@ module bit_population_counter_tb #(
 
 localparam int unsigned SKIP_CHANCE    = 50;
 localparam int unsigned PIPELINE_COUNT = ( WIDTH / PIPELINE_SIZE );
-localparam int unsigned LATENCY        = ( PIPELINE_COUNT + 2 );
+localparam int unsigned LATENCY        = PIPELINE_COUNT;
 
 bit                     clk;
 bit                     srst;
@@ -103,7 +103,6 @@ initial
       end
 
     test_case( data );
-
 
     $display( "Tests Passed" );
     $stop;
