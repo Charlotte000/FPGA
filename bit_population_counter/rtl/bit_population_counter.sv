@@ -1,6 +1,6 @@
 module bit_population_counter #(
-  parameter WIDTH,
-  parameter PIPE_SIZE
+  parameter int unsigned WIDTH,
+  parameter int unsigned PIPELINE_SIZE
 )(
   input  logic                   clk_i,
   input  logic                   srst_i,
@@ -12,51 +12,44 @@ module bit_population_counter #(
   output logic                   data_val_o
 );
 
-logic [WIDTH-1:0]           pipe_data_i;
-logic [$clog2(PIPE_SIZE):0] pipe_data_o;
-int                         pipe_offset;
-logic                       pipe_busy;
-logic                       pipe_done;
+localparam int unsigned PIPELINE_COUNT = ( WIDTH / PIPELINE_SIZE );
+
+logic [PIPELINE_COUNT:0][WIDTH-1:0]       pipeline_data;
+logic [PIPELINE_COUNT:0]                  pipeline_data_val;
+logic [PIPELINE_COUNT:0][$clog2(WIDTH):0] pipeline_count;
+
+genvar i;
+generate
+  for( i = 0; i < PIPELINE_COUNT; i++ )
+    begin : pipeline_generator
+      bit_counter_pipeline #(
+        .WIDTH           ( WIDTH             ),
+        .PIPELINE_SIZE   ( PIPELINE_SIZE     ),
+        .PIPELINE_OFFSET ( i * PIPELINE_SIZE )
+      ) bit_counter_pipeline_inst (
+        .clk_i      ( clk_i                  ),
+        .data_i     ( pipeline_data[i]       ),
+        .data_val_i ( pipeline_data_val[i]   ),
+        .count_i    ( pipeline_count[i]      ),
+        .data_o     ( pipeline_data[i+1]     ),
+        .data_val_o ( pipeline_data_val[i+1] ),
+        .count_o    ( pipeline_count[i+1]    )
+      );
+    end
+endgenerate
 
 always_ff @( posedge clk_i )
-  begin
-    if( data_val_i )
-      pipe_data_i <= data_i;
-  end
-
-always_comb
-  begin
-    pipe_data_o = '0;
-    for( int i = 0; i < PIPE_SIZE; i++ )
-      pipe_data_o += pipe_data_i[i + pipe_offset];
-  end
+  pipeline_data[0] <= data_i;
 
 always_ff @( posedge clk_i )
-  begin
-    if( srst_i )
-      pipe_offset <= 0;
-    else
-      if( data_val_i || pipe_done )
-        pipe_offset <= 0;
-      else
-        pipe_offset <= ( pipe_offset + PIPE_SIZE );
-  end
-
-assign pipe_busy = ( pipe_offset > 0 ) && ( !pipe_done );
-
-assign pipe_done = ( pipe_offset >= WIDTH );
+  pipeline_data_val[0] <= data_val_i;
 
 always_ff @( posedge clk_i )
-  begin
-    if( srst_i )
-      data_o <= '0;
-    else
-      if( data_val_i || pipe_done )
-        data_o <= '0;
-      else
-        data_o <= ( data_o + pipe_data_o );
-  end
+  data_o <= pipeline_count[PIPELINE_COUNT];
 
-assign data_val_o = pipe_done;
+always_ff @( posedge clk_i )
+  data_val_o <= pipeline_data_val[PIPELINE_COUNT];
+
+assign pipeline_count[0] = '0;
 
 endmodule

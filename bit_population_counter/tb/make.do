@@ -1,5 +1,6 @@
 vlib work
 
+vlog -sv ../rtl/bit_counter_pipeline.sv
 vlog -sv ../rtl/bit_population_counter.sv
 vlog -sv bit_population_counter_tb.sv
 

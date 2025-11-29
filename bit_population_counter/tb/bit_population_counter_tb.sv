@@ -1,10 +1,14 @@
 `timescale 1ns/1ns
 
 module bit_population_counter_tb #(
-  parameter PERIOD    = 10,
-  parameter WIDTH     = 128,
-  parameter PIPE_SIZE = 16
+  parameter int unsigned PERIOD        = 10,
+  parameter int unsigned WIDTH         = 128,
+  parameter int unsigned PIPELINE_SIZE = 16
 );
+
+localparam int unsigned SKIP_CHANCE    = 50;
+localparam int unsigned PIPELINE_COUNT = ( WIDTH / PIPELINE_SIZE );
+localparam int unsigned LATENCY        = ( PIPELINE_COUNT + 2 );
 
 bit                     clk;
 bit                     srst;
@@ -16,8 +20,8 @@ logic [$clog2(WIDTH):0] data_o;
 logic                   data_val_o;
 
 bit_population_counter #(
-  .WIDTH     ( WIDTH     ),
-  .PIPE_SIZE ( PIPE_SIZE )
+  .WIDTH         ( WIDTH         ),
+  .PIPELINE_SIZE ( PIPELINE_SIZE )
 ) DUT (
   .clk_i      ( clk        ),
   .srst_i     ( srst       ),
@@ -41,28 +45,38 @@ task automatic check( input bit result, input string error_msg );
     end
 endtask
 
-task automatic test_case( input logic [WIDTH-1:0] data, input int unsigned break_chance );
-  data_i     <= data;
-  data_val_i <= 1;
-  @( posedge clk );
-
-  data_i     <= 'x;
-  data_val_i <= 0;
-  repeat( ( WIDTH / PIPE_SIZE ) + 1 )
+task automatic test_case( input logic [WIDTH-1:0] data [] );
+  for( int i = 0; i < ( data.size() + LATENCY ); i++ )
     begin
-      if( $urandom_range( 100, 1 ) <= break_chance )
-          return;
-      @( posedge clk );
-    end
+      int j = ( i - LATENCY );
 
-  check(
-    data_val_o == 1,
-    $sformatf( "Test Failed: ( data = %b ) expected %s = %0d but got %0d", data, "data_val_o", 1, data_val_o )
-  );
-  check(
-    data_o == $countones(data),
-    $sformatf( "Test Failed: ( data = %b ) expected %s = %0d but got %0d", data, "data_o", $countones(data), data_o )
-  );
+      if( i < data.size() )
+        begin
+          data_i     <= data[i];
+          data_val_i <= ( data[i] !== 'x );
+        end
+      else
+        begin
+          data_i     <= 'x;
+          data_val_i <= 0;
+        end
+      @( posedge clk );
+
+      if( j >= 0 )
+        begin
+
+          check(
+            data_val_o === ( data[j] !== 'x ),
+            $sformatf( "Test Failed: ( data = %b ) expected %s = %0d but got %0d", data[j], "data_val_o", ( data[j] !== 'x ), data_val_o )
+          );
+
+          if( data_val_o )
+            check(
+              data_o === $countones(data[j]),
+              $sformatf( "Test Failed: ( data = %b ) expected %s = %0d but got %0d", data[j], "data_o", $countones(data[j]), data_o )
+            );
+        end
+    end
 endtask
 
 initial
@@ -71,17 +85,25 @@ initial
 
 initial
   begin
+    logic [WIDTH-1:0] data [];
+
     data_val_i = 0;
     reset();
 
+    data = new [( 1 + WIDTH ) + 100];
     for( int i = 0; i <= WIDTH; i++ )
-      test_case( ( ( WIDTH )'( 1 ) << i ) - 1'b1, 0 );
+      data[i] = ( ( ( WIDTH )'( 1 ) << i ) - 1'b1 );
 
-    repeat( 100 )
-      test_case( $urandom_range( ( 2 ** WIDTH ) - 1, 0), 0 );
+    for( int i = 0; i < 100; i++ )
+      begin
+        if( $urandom_range( 100, 1 ) <= SKIP_CHANCE )
+          data[WIDTH + 1 + i] = 'x;
+        else
+          data[WIDTH + 1 + i] = $urandom_range( ( 2 ** WIDTH ) - 1, 0 );
+      end
 
-    repeat( 100 )
-      test_case( $urandom_range( ( 2 ** WIDTH ) - 1, 0), 50 );
+    test_case( data );
+
 
     $display( "Tests Passed" );
     $stop;
