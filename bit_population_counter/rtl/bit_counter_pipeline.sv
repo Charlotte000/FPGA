@@ -4,6 +4,7 @@ module bit_counter_pipeline #(
   parameter int unsigned PIPELINE_OFFSET
 )(
   input  logic                   clk_i,
+  input  logic                   srst_i,
 
   input  logic [WIDTH-1:0]       data_i,
   input  logic                   data_val_i,
@@ -27,7 +28,12 @@ always_ff @( posedge clk_i )
   data_o <= data_i;
 
 always_ff @( posedge clk_i )
-  data_val_o <= data_val_i;
+  begin
+    if( srst_i )
+      data_val_o <= 0;
+    else
+      data_val_o <= data_val_i;
+  end
 
 always_ff @( posedge clk_i )
   count_o <= count;

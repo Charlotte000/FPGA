@@ -18,9 +18,6 @@ logic [PIPELINE_COUNT:0][WIDTH-1:0]       pipeline_data;
 logic [PIPELINE_COUNT:0]                  pipeline_data_val;
 logic [PIPELINE_COUNT:0][$clog2(WIDTH):0] pipeline_count;
 
-int   pipeline_counter;
-logic pipeline_ready;
-
 genvar i;
 generate
   for( i = 0; i < PIPELINE_COUNT; i++ )
@@ -31,6 +28,7 @@ generate
         .PIPELINE_OFFSET ( i * PIPELINE_SIZE )
       ) bit_counter_pipeline_inst (
         .clk_i      ( clk_i                  ),
+        .srst_i     ( srst_i                 ),
         .data_i     ( pipeline_data[i]       ),
         .data_val_i ( pipeline_data_val[i]   ),
         .count_i    ( pipeline_count[i]      ),
@@ -41,23 +39,13 @@ generate
     end
 endgenerate
 
-assign pipeline_ready = ( pipeline_counter >= PIPELINE_COUNT );
-
-always_ff @( posedge clk_i )
-  begin
-    if( srst_i )
-      pipeline_counter <= '0;
-    else
-      pipeline_counter <= ( pipeline_counter + 1 );
-  end
-
 assign pipeline_data[0] = data_i;
 
 assign pipeline_data_val[0] = data_val_i;
 
 assign data_o = pipeline_count[PIPELINE_COUNT];
 
-assign data_val_o = ( pipeline_ready && pipeline_data_val[PIPELINE_COUNT] );
+assign data_val_o = pipeline_data_val[PIPELINE_COUNT];
 
 assign pipeline_count[0] = '0;
 
