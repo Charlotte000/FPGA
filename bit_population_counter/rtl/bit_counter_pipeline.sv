@@ -30,7 +30,7 @@ always_ff @( posedge clk_i )
 always_ff @( posedge clk_i )
   begin
     if( srst_i )
-      data_val_o <= 0;
+      data_val_o <= 1'b0;
     else
       data_val_o <= data_val_i;
   end

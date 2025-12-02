@@ -8,8 +8,6 @@ module bit_population_counter_tb #(
   parameter int unsigned TESTS_COUNT   = ( ( WIDTH + 1 ) + 1000 )
 );
 
-localparam int unsigned LATENCY = ( WIDTH / PIPELINE_SIZE );
-
 bit                     clk;
 bit                     srst;
 
@@ -19,13 +17,7 @@ logic                   data_val_i;
 logic [$clog2(WIDTH):0] data_o;
 logic                   data_val_o;
 
-typedef struct
-{
-  logic [WIDTH-1:0]       data;
-  logic [$clog2(WIDTH):0] count;
-} test;
-
-mailbox #( test ) tests_mailbox = new( TESTS_COUNT );
+mailbox #( logic [WIDTH-1:0] ) tests_mailbox = new( TESTS_COUNT );
 
 bit_population_counter #(
   .WIDTH         ( WIDTH         ),
@@ -40,9 +32,9 @@ bit_population_counter #(
 );
 
 task automatic reset();
-  srst <= 1;
+  srst <= 1'b1;
   @( posedge clk );
-  srst <= 0;
+  srst <= 1'b0;
 endtask
 
 task automatic check( input bit result, input string error_msg );
@@ -54,31 +46,49 @@ task automatic check( input bit result, input string error_msg );
 endtask
 
 task automatic send_tests();
-  test new_test;
+  int unsigned i = 0;
+  logic [WIDTH-1:0] data;
 
   // 0000, 0001, 0011, 0111, ...
-  for( int i = 0; i <= WIDTH; i++ )
+  while( i <= WIDTH )
     begin
-      new_test = '{ data: ( ( ( WIDTH )'( 1 ) << i ) - 1'b1 ), count: i };
-      tests_mailbox.put( new_test );
+      if( $urandom_range( 100, 1 ) <= SKIP_CHANCE )
+        begin
+          data_i     <= 'x;
+          data_val_i <= 1'b0;
+          @( posedge clk );
+          continue;
+        end
 
-      data_i     <= new_test.data;
-      data_val_i <= ( new_test.data !== 'x );
+      data = ( ( WIDTH'( 1 ) << i ) - 1'b1 );
+
+      data_i     <= data;
+      data_val_i <= 1'b1;
       @( posedge clk );
+
+      tests_mailbox.put( data );
+      i++;
     end
 
   // Random
-  for( int i = ( WIDTH + 1 ); i < TESTS_COUNT; i++ )
+  while( i < TESTS_COUNT )
     begin
-      logic [WIDTH-1:0] data;
-      data = ( $urandom_range( 100, 1 ) <= SKIP_CHANCE ) ? ( 'x ) : ( $urandom_range( ( 2 ** WIDTH ) - 1, 0 ) );
+      if( $urandom_range( 100, 1 ) <= SKIP_CHANCE )
+        begin
+          data_i     <= 'x;
+          data_val_i <= 1'b0;
+          @( posedge clk );
+          continue;
+        end
 
-      new_test = '{ data: data, count: $countones( data ) };
-      tests_mailbox.put( new_test );
+      data = $urandom_range( ( 2 ** WIDTH ) - 1, 0 );
 
-      data_i     <= new_test.data;
-      data_val_i <= ( new_test.data !== 'x );
+      data_i     <= data;
+      data_val_i <= 1'b1;
       @( posedge clk );
+
+      tests_mailbox.put( data );
+      i++;
     end
 
   data_i     <= 'x;
@@ -86,26 +96,27 @@ task automatic send_tests();
 endtask
 
 task automatic check_tests();
-  test new_test;
-
-  repeat( LATENCY ) @( posedge clk );
+  logic [WIDTH-1:0]       data;
+  logic [$clog2(WIDTH):0] count;
 
   repeat( TESTS_COUNT )
     begin
-      @( posedge clk );
+      while( data_val_o !== 1'b1 )
+        @( posedge clk );
 
-      tests_mailbox.get(new_test);
+      check( tests_mailbox.try_get( data ), "Test Failed: mailbox is empty" );
+      count = $countones( data );
 
       check(
-        data_val_o === ( new_test.data !== 'x ),
-        $sformatf( "Test Failed: ( data = %b ) expected %s = %0d but got %0d", new_test.data, "data_val_o", ( new_test.data !== 'x ), data_val_o )
+        data_val_o === 1'b1,
+        $sformatf( "Test Failed: ( data = %b ) expected %s = %0d but got %0d", data, "data_val_o", ( data !== 'x ), data_val_o )
+      );
+      check(
+        data_o === count,
+        $sformatf( "Test Failed: ( data = %b ) expected %s = %0d but got %0d", data, "data_o", count, data_o )
       );
 
-      if( data_val_o )
-        check(
-          data_o === new_test.count,
-          $sformatf( "Test Failed: ( data = %b ) expected %s = %0d but got %0d", new_test.data, "data_o", new_test.count, data_o )
-        );
+      @( posedge clk );
     end
 
 endtask
@@ -116,7 +127,7 @@ initial
 
 initial
   begin
-    data_val_i = 0;
+    data_val_i = 1'b0;
     reset();
 
     fork
