@@ -94,7 +94,7 @@ FPGA labs
 | data_val_o   | output    | 1        | Is data_o valid          |
 
 ## Task 4 Bit Population Counter
-[bit_population_counter_tb](./bit_population_counter_tb)
+[bit_population_counter](./bit_population_counter)
 
 | Parameter | Comment    |
 |-----------|------------|
@@ -108,3 +108,17 @@ FPGA labs
 | data_val_i | input     | 1                 | Is data_i valid   |
 | data_o     | output    | $clog2(WIDTH) + 1 | Output data       |
 | data_val_o | output    | 1                 | Is data_o valid   |
+
+## Task 5 Debouncer
+[debouncer](./debouncer)
+
+| Parameter      | Comment                        |
+|----------------|--------------------------------|
+| CLK_FREQ_MHZ   | clk_i frequency, MHz           |
+| GLITCH_TIME_NS | The max time of the glitch, ns |
+
+| Signal            | Direction | Bit size          | Comment                                  |
+|-------------------|-----------|-------------------|------------------------------------------|
+| clk_i             | input     | 1                 | Clock signal                             |
+| key_i             | input     | 1                 | Button signal. 0 - pressed, 1 - released |
+| key_pressed_stb_o | output    | 1                 | Is button pressed                        |
