@@ -21,25 +21,21 @@ debouncer #(
   .key_pressed_stb_o ( key_pressed_stb_o )
 );
 
-task automatic check( input bit result, input string error_msg );
-  if( !result )
-    begin
-      $display( error_msg );
-      $stop;
-    end
-endtask
-
-task automatic send_consecutive( input int unsigned cycles );
+task automatic send_consecutive( input int unsigned on_cycles );
   // Off x 1
   key_i <= 1'b1;
   @( posedge clk );
 
-  // On x i
-  repeat( cycles - 1 )
+  // On x on_cycles
+  repeat( on_cycles )
     begin
       key_i <= 1'b0;
       @( posedge clk );
     end
+
+  // Off x 1
+  key_i <= 1'b1;
+  @( posedge clk );
 endtask
 
 task automatic send_random( input int unsigned cycles, input int unsigned off_chance );
@@ -50,57 +46,58 @@ task automatic send_random( input int unsigned cycles, input int unsigned off_ch
     end
 endtask
 
-task automatic listen( input int unsigned cycles );
-  logic [3:0] key_buffer;
-  time last_off;
-  bit stb;
-
-  repeat( cycles )
-    begin
-      @( posedge clk );
-      key_buffer = { key_buffer[2:0], key_i };
-
-      if( key_buffer[3] )
-        last_off = $time;
-
-      stb = ( ( $time - last_off ) == GLITCH_TIME_NS );
-      check(
-        key_pressed_stb_o == stb,
-        $sformatf( "Test Failed: expected %s = %0d but got %0d", "key_pressed_stb_o", stb, key_pressed_stb_o )
-      );
-    end
-endtask
-
 initial
   forever
     #( PERIOD / 2 ) clk = ( !clk );
 
 initial
   begin
+    logic [3:0] key_buffer;
+    time        last_off;
+
+    forever
+      begin
+        @( posedge clk );
+        key_buffer = { key_buffer[2:0], key_i };
+        if( key_buffer[3] === 1'bx )
+          continue;
+
+        if( key_buffer[3] === 1'b1 )
+          last_off = $time;
+
+        if( key_pressed_stb_o != ( ( $time - last_off ) == GLITCH_TIME_NS ) )
+          begin
+            $display( "Test Failed: unexpected %s = %0d", "key_pressed_stb_o", key_pressed_stb_o );
+            $stop;
+          end
+      end
+  end
+
+initial
+  begin
+    // Setup
     key_i <= 1'b1;
     repeat( 3 ) @( posedge clk );
 
-    fork
-      // Send tests
-      begin
-        send_consecutive( GLITCH_CYCLES - 2 );
-        send_consecutive( GLITCH_CYCLES - 1 );
-        send_consecutive( GLITCH_CYCLES     );
-        send_consecutive( GLITCH_CYCLES + 1 );
-        send_consecutive( GLITCH_CYCLES + 2 );
+    // Send tests
+    send_consecutive( GLITCH_CYCLES - 2 );
+    send_consecutive( GLITCH_CYCLES - 1 );
+    send_consecutive( GLITCH_CYCLES     );
+    send_consecutive( GLITCH_CYCLES + 1 );
+    send_consecutive( GLITCH_CYCLES + 2 );
 
-        send_random( ( GLITCH_CYCLES * 2   ), 100 );
-        send_random( ( GLITCH_CYCLES * 100 ), 90  );
-        send_random( ( GLITCH_CYCLES * 100 ), 10  );
-        send_random( ( GLITCH_CYCLES * 2   ), 0   );
-      end
+    send_random( ( GLITCH_CYCLES * 2   ), 100 );
+    send_random( ( GLITCH_CYCLES * 100 ), 90  );
+    send_random( ( GLITCH_CYCLES * 100 ), 10  );
+    send_random( ( GLITCH_CYCLES * 2   ), 0   );
 
-      // Check tests
-      listen( ( GLITCH_CYCLES * 5 ) + GLITCH_CYCLES * ( 2 + 100 + 100 + 2 ) );
-    join
+    // Timeout
+    repeat( 10 ) @( posedge clk );
 
+    // Finish
     $display( "Tests Passed" );
     $stop;
+
   end
 
 endmodule
