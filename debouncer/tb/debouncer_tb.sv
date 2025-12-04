@@ -46,32 +46,48 @@ task automatic send_random( input int unsigned cycles, input int unsigned off_ch
     end
 endtask
 
+task automatic send();
+  // Send tests
+  send_consecutive( GLITCH_CYCLES - 2 );
+  send_consecutive( GLITCH_CYCLES - 1 );
+  send_consecutive( GLITCH_CYCLES     );
+  send_consecutive( GLITCH_CYCLES + 1 );
+  send_consecutive( GLITCH_CYCLES + 2 );
+
+  send_random( ( GLITCH_CYCLES * 2   ), 100 );
+  send_random( ( GLITCH_CYCLES * 100 ), 90  );
+  send_random( ( GLITCH_CYCLES * 100 ), 10  );
+  send_random( ( GLITCH_CYCLES * 2   ), 0   );
+
+  // Timeout
+  repeat( 10 ) @( posedge clk );
+endtask
+
+task automatic listen();
+  logic [3:0] key_buffer;
+  time        last_off;
+
+  forever
+    begin
+      @( posedge clk );
+      key_buffer = { key_buffer[2:0], key_i };
+      if( key_buffer[3] === 1'bx )
+        continue;
+
+      if( key_buffer[3] === 1'b1 )
+        last_off = $time;
+
+      if( key_pressed_stb_o != ( ( $time - last_off ) == GLITCH_TIME_NS ) )
+        begin
+          $display( "Test Failed: unexpected %s = %0d", "key_pressed_stb_o", key_pressed_stb_o );
+          $stop;
+        end
+    end
+endtask
+
 initial
   forever
     #( PERIOD / 2 ) clk = ( !clk );
-
-initial
-  begin
-    logic [3:0] key_buffer;
-    time        last_off;
-
-    forever
-      begin
-        @( posedge clk );
-        key_buffer = { key_buffer[2:0], key_i };
-        if( key_buffer[3] === 1'bx )
-          continue;
-
-        if( key_buffer[3] === 1'b1 )
-          last_off = $time;
-
-        if( key_pressed_stb_o != ( ( $time - last_off ) == GLITCH_TIME_NS ) )
-          begin
-            $display( "Test Failed: unexpected %s = %0d", "key_pressed_stb_o", key_pressed_stb_o );
-            $stop;
-          end
-      end
-  end
 
 initial
   begin
@@ -79,20 +95,10 @@ initial
     key_i <= 1'b1;
     repeat( 3 ) @( posedge clk );
 
-    // Send tests
-    send_consecutive( GLITCH_CYCLES - 2 );
-    send_consecutive( GLITCH_CYCLES - 1 );
-    send_consecutive( GLITCH_CYCLES     );
-    send_consecutive( GLITCH_CYCLES + 1 );
-    send_consecutive( GLITCH_CYCLES + 2 );
-
-    send_random( ( GLITCH_CYCLES * 2   ), 100 );
-    send_random( ( GLITCH_CYCLES * 100 ), 90  );
-    send_random( ( GLITCH_CYCLES * 100 ), 10  );
-    send_random( ( GLITCH_CYCLES * 2   ), 0   );
-
-    // Timeout
-    repeat( 10 ) @( posedge clk );
+    fork
+      send();
+      listen();
+    join_any
 
     // Finish
     $display( "Tests Passed" );
