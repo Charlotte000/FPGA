@@ -122,3 +122,32 @@ FPGA labs
 | clk_i             | input     | 1                 | Clock signal                             |
 | key_i             | input     | 1                 | Button signal. 0 - pressed, 1 - released |
 | key_pressed_stb_o | output    | 1                 | Is button pressed                        |
+
+## Task 6 Traffic Lights
+[traffic_lights](./traffic_lights)
+
+| Parameter             | Comment                        |
+|-----------------------|--------------------------------|
+| BLINK_HALF_PERIOD_MS  | The half-cycle of blinking of yellow and green, ms |
+| BLINK_GREEN_TIME_TICK | The time spent flashing green, number of blinks    |
+| RED_YELLOW_MS         | The time spent in the red and yellow state, ms     |
+
+| Signal            | Direction | Bit size | Comment            |
+|-------------------|-----------|----------|--------------------|
+| clk_i             | input     | 1        | Clock signal, 2KHz |
+| srst_i            | input     | 1        | Synchronous reset  |
+| cmd_type_i        | input     | 3        | Command type       |
+| cmd_valid_i       | input     | 1        | Is command valid   |
+| cmd_data_i        | input     | 16       | Command data       |
+| red_o             | output    | 1        | Is red signal      |
+| yellow_o          | output    | 1        | Is yellow signal   |
+| green_o           | output    | 1        | Is green signal    |
+
+| cmd_type_i | Comment                         |
+|------------|---------------------------------|
+| 0          | Enable/switch to standard mode  |
+| 1          | Turn off                        |
+| 2          | Switch to the uncontrolled mode |
+| 3          | Set green time                  |
+| 4          | Set red time                    |
+| 5          | Set yellow time                 |
