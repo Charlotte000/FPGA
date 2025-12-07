@@ -2,8 +2,8 @@ import definitions_pkg::*;
 
 module traffic_lights_top #(
   parameter int unsigned BLINK_HALF_PERIOD_MS  = 1000,
-  parameter int unsigned BLINK_GREEN_TIME_TICK = 5,
-  parameter int unsigned RED_YELLOW_MS         = 2000
+  parameter int unsigned BLINK_GREEN_TIME_TICK = 10,
+  parameter int unsigned RED_YELLOW_MS         = 5000
 )(
   input  logic        clk_2k_i,
   input  logic        srst_i,

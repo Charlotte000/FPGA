@@ -5,16 +5,16 @@ module traffic_lights #(
   parameter int unsigned BLINK_GREEN_TIME_TICK,
   parameter int unsigned RED_YELLOW_MS
 )(
-  input  logic        clk_2k_i,
-  input  logic        srst_i,
+  input  logic            clk_2k_i,
+  input  logic            srst_i,
 
-  input  command_e    cmd_type_i,
-  input  logic        cmd_valid_i,
-  input  logic [15:0] cmd_data_i,
+  input  command_e        cmd_type_i,
+  input  logic            cmd_valid_i,
+  input  logic     [15:0] cmd_data_i,
 
-  output logic        red_o,
-  output logic        yellow_o,
-  output logic        green_o
+  output logic            red_o,
+  output logic            yellow_o,
+  output logic            green_o
 );
 
 localparam int unsigned CLK_FREQ_KHZ           = 2;
@@ -30,10 +30,10 @@ logic [CYCLES_W:0] red_max_cycles;
 logic [CYCLES_W:0] yellow_max_cycles;
 logic [CYCLES_W:0] green_max_cycles;
 
-logic [CYCLES_W:0]                             red_curr_cycles;
-logic [CYCLES_W:0]                             red_yellow_curr_cycles;
-logic [CYCLES_W:0]                             yellow_curr_cycles;
-logic [CYCLES_W:0]                             green_curr_cycles;
+logic [CYCLES_W:0]                       red_curr_cycles;
+logic [CYCLES_W:0]                       yellow_curr_cycles;
+logic [CYCLES_W:0]                       green_curr_cycles;
+logic [$clog2(RED_YELLOW_MAX_CYCLES):0]  red_yellow_curr_cycles;
 logic [$clog2(GREEN_BLINK_MAX_CYCLES):0] green_blink_cycles;
 
 logic [$clog2(BLINK_MAX_CYCLES):0] blink_cycles;
@@ -134,7 +134,7 @@ always_ff @( posedge clk_2k_i )
     if( srst_i )
       blink_cycles <= '0;
     else
-      if( ( blink_cycles != BLINK_MAX_CYCLES ) && ( ( state == MANUAL_S ) || ( state == GREEN_BLINK_S ) ) )
+      if( ( blink_cycles != ( BLINK_MAX_CYCLES - 1'b1 ) ) && ( ( state == MANUAL_S ) || ( state == GREEN_BLINK_S ) ) )
         blink_cycles <= ( blink_cycles + 1'b1 );
       else
         blink_cycles <= '0;
@@ -201,13 +201,13 @@ always_ff @( posedge clk_2k_i )
 assign red_o    = ( ( state == RED_S ) || ( state == RED_YELLOW_S ) );
 
 assign yellow_o = (
-  ( state == RED_YELLOW_S ) ||
-  ( state == YELLOW_S )     ||
+  ( state == RED_YELLOW_S )             ||
+  ( state == YELLOW_S )                 ||
   ( ( state == MANUAL_S ) && blink_on )
 );
 
 assign green_o  = (
-  ( state == GREEN_S ) ||
+  ( state == GREEN_S )                       ||
   ( ( state == GREEN_BLINK_S ) && blink_on )
 );
 
