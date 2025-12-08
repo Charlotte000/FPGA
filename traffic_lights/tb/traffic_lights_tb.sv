@@ -195,21 +195,20 @@ task automatic test();
   // Test manual mode
   set_manual();
   listen_manual_mode( 10 );
-
-  // Stop
-  disable test_threads;
 endtask
 
 initial
   begin
     cmd_valid_i <= 1'b0;
 
-    fork : test_threads
+    fork
       clock();
-      test();
-    join
+    join_none
+
+    test();
 
     $display( "Tests Passed" );
+    $stop;
   end
 
 endmodule

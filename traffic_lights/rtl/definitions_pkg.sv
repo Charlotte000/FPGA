@@ -10,7 +10,7 @@ typedef enum logic [2:0]
   SET_YELLOW = 3'd5
 } command_e;
 
-typedef enum logic [2:0]
+typedef enum
 {
   RED_S,
   RED_YELLOW_S,
