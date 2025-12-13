@@ -126,8 +126,8 @@ FPGA labs
 ## Task 6 Traffic Lights
 [traffic_lights](./traffic_lights)
 
-| Parameter             | Comment                        |
-|-----------------------|--------------------------------|
+| Parameter             | Comment                                            |
+|-----------------------|----------------------------------------------------|
 | BLINK_HALF_PERIOD_MS  | The half-cycle of blinking of yellow and green, ms |
 | BLINK_GREEN_TIME_TICK | The time spent flashing green, number of blinks    |
 | RED_YELLOW_MS         | The time spent in the red and yellow state, ms     |
@@ -151,3 +151,33 @@ FPGA labs
 | 3          | Set green time                  |
 | 4          | Set red time                    |
 | 5          | Set yellow time                 |
+
+# Lab2
+
+## Task 1 FIFO
+[fifo](./fifo)
+
+[Documentation](https://faculty-web.msoe.edu/johnsontimoj/EE3921/files3921/ug_fifo.pdf)
+
+| Parameter          | Comment                                           |
+|--------------------|---------------------------------------------------|
+| DWIDTH             | The width of the data_i and q_o signal            |
+| AWIDTH             | The width of the usedw_o signal                   |
+| SHOWAHEAD          | Whether the FIFO is in Show-Ahead or Normal mode  |
+| ALMOST_FULL_VALUE  | The threshold value for the almost_full_o signal  |
+| ALMOST_EMPTY_VALUE | The threshold value for the almost_empty_o signal |
+| REGISTER_OUTPUT    | Whether to register the q_o output                |
+
+| Signal         | Direction | Bit size | Comment                                |
+|----------------|-----------|----------|----------------------------------------|
+| clk_i          | input     | 1        | Posedge-triggered clock                |
+| srst_i         | input     | 1        | Synchronous reset                      |
+| data_i         | input     | DWIDTH   | Data to be written in the FIFO         |
+| wrreq_i        | input     | 1        | Write operation request                |
+| rdreq_i        | input     | 1        | Read operation request                 |
+| q_o            | output    | DWIDTH   | The data read from the read request    |
+| empty_o        | output    | 1        | Is FIFO empty                          |
+| full_o         | output    | 1        | Is FIFO full                           |
+| usedw_o        | output    | AWIDTH+1 | The number of words stored in the FIFO |
+| almost_full_o  | output    | 1        | Is FIFO almost full                    |
+| almost_empty_o | output    | 1        | Is FIFO almost empty                   |
