@@ -1,14 +1,12 @@
 /*
-SHOWAHEAD       always = 1
-REGISTER_OUTPUT always = 0
+SHOWAHEAD       = 1
+REGISTER_OUTPUT = 0
 */
 module fifo #(
   parameter int unsigned DWIDTH,
   parameter int unsigned AWIDTH,
   parameter int unsigned ALMOST_FULL_VALUE,
-  parameter int unsigned ALMOST_EMPTY_VALUE,
-  parameter bit          SHOWAHEAD          = 1,
-  parameter bit          REGISTER_OUTPUT    = 0
+  parameter int unsigned ALMOST_EMPTY_VALUE
 )(
   input  logic              clk_i,
   input  logic              srst_i,
@@ -42,7 +40,7 @@ ram #(
   .wr_addr_i ( wr_addr ),
   .wr_data_i ( data_i  ),
   .rd_en_i   ( 1'b1    ),
-  .rd_addr_i ( rd_addr ),
+  .rd_addr_i ( rd_addr + rd_en ),
   .rd_data_o ( q_o     )
 );
 
@@ -79,9 +77,8 @@ always_ff @( posedge clk_i )
     if( srst_i )
       empty_o <= 1'b1;
     else
-      empty_o <= ( usedw_o == '0 );
+      empty_o <= ( ( usedw_o - rd_en ) == '0 );
   end
-// assign empty_o        = ( usedw_o == '0 ); 
 
 assign full_o         = usedw_o[AWIDTH];
 

@@ -2,9 +2,7 @@ module fifo_top #(
   parameter int unsigned DWIDTH             = 8,
   parameter int unsigned AWIDTH             = 12,
   parameter int unsigned ALMOST_FULL_VALUE  = 12,
-  parameter int unsigned ALMOST_EMPTY_VALUE = 2,
-  parameter bit          SHOWAHEAD          = 1,
-  parameter bit          REGISTER_OUTPUT    = 0
+  parameter int unsigned ALMOST_EMPTY_VALUE = 2
 )(
   input  logic              clk_i,
   input  logic              srst_i,
@@ -37,9 +35,7 @@ fifo #(
   .DWIDTH             ( DWIDTH             ),
   .AWIDTH             ( AWIDTH             ),
   .ALMOST_FULL_VALUE  ( ALMOST_FULL_VALUE  ),
-  .ALMOST_EMPTY_VALUE ( ALMOST_EMPTY_VALUE ),
-  .SHOWAHEAD          ( SHOWAHEAD          ),
-  .REGISTER_OUTPUT    ( REGISTER_OUTPUT    )
+  .ALMOST_EMPTY_VALUE ( ALMOST_EMPTY_VALUE )
 ) fifo_inst (
   .clk_i          ( clk_i        ),
   .srst_i         ( srst_i       ),
