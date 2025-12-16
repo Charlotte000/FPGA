@@ -93,7 +93,7 @@ task automatic clock();
     #( PERIOD / 2.0 ) clk <= ( !clk );
 endtask
 
-task automatic send(
+task automatic send_random(
   input int unsigned count,
   input int unsigned write_chance,
   input int unsigned read_chance
@@ -104,17 +104,29 @@ task automatic send(
       rdreq <= 1'b0;
       data  <= 'x;
 
-      if( $urandom_range(1, 100) <= write_chance )
+      if( ( !full_golden ) && ( $urandom_range(1, 100) <= write_chance ) )
         begin
           wrreq <= 1'b1;
           data  <= $urandom_range(0, ( ( 2 ** DWIDTH ) - 1 ) );
         end
 
-      if( $urandom_range(1, 100) <= read_chance )
+      if( ( !empty_golden ) && ( $urandom_range(1, 100) <= read_chance ) )
         rdreq <= 1'b1;
 
       @( posedge clk );
     end
+endtask
+
+task automatic send_fill( input int unsigned count );
+  send_random( count, 100, 0 );
+endtask
+
+task automatic send_clear( input int unsigned count );
+  send_random( count, 0, 100 );
+endtask
+
+task automatic send_wait( input int unsigned count );
+  send_random( count, 0, 0 );
 endtask
 
 task automatic listen();
@@ -157,12 +169,12 @@ task automatic listen();
           $stop;
         end
 
-      // assert( q_dut === q_golden )
-      // else
-      //   begin
-      //     $error( "Test Failed: %s != %s ( %0d != %0d )", "q_dut", "q_golden", q_dut, q_golden );
-      //     $stop;
-      //   end
+      assert( q_dut === q_golden )
+      else
+        begin
+          $error( "Test Failed: %s != %s ( %0d != %0d )", "q_dut", "q_golden", q_dut, q_golden );
+          $stop;
+        end
     end
 endtask
 
@@ -179,9 +191,21 @@ initial
 
     fork
       begin
-        send( 1000,   0, 100 );
-        send( 1000, 100,   0 );
-        send( 1000,  50,  50 );
+        // Random read/write
+        send_random( 1000, 25, 75 );
+        send_random( 1000, 50, 50 );
+        send_random( 1000, 75, 25 );
+
+        // Empty read/write
+        send_clear( 2 ** AWIDTH );
+        send_random( 1, 100, 100 );
+
+        // Full read/write
+        send_fill( 2 ** AWIDTH );
+        send_random( 1, 100, 100 );
+
+        // Timeout
+        send_wait( 2 ** AWIDTH );
       end
 
       listen();

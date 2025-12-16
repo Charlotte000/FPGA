@@ -1,6 +1,7 @@
 module ram #(
   parameter int unsigned DWIDTH,
-  parameter int unsigned AWIDTH
+  parameter int unsigned AWIDTH,
+  parameter int unsigned NUM_WORDS = ( 2 ** AWIDTH )
 )(
   input  logic              clk_i,
 
@@ -12,8 +13,6 @@ module ram #(
   input  logic [AWIDTH-1:0] rd_addr_i,
   output logic [DWIDTH-1:0] rd_data_o
 );
-
-localparam int unsigned NUM_WORDS = ( 2 ** AWIDTH );
 
 logic [DWIDTH-1:0] memory [NUM_WORDS-1:0];
 

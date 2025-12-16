@@ -31,6 +31,11 @@ logic [AWIDTH-1:0] wr_addr;
 logic              rd_en;
 logic [AWIDTH-1:0] rd_addr;
 
+logic fifo_has_data;
+logic output_has_valid;
+logic need_load_output;
+logic output_is_last;
+
 ram #(
   .DWIDTH ( DWIDTH ),
   .AWIDTH ( AWIDTH )
@@ -39,14 +44,15 @@ ram #(
   .wr_en_i   ( wr_en   ),
   .wr_addr_i ( wr_addr ),
   .wr_data_i ( data_i  ),
-  .rd_en_i   ( 1'b1    ),
-  .rd_addr_i ( rd_addr + rd_en ),
+  .rd_en_i   ( rd_en   ),
+  .rd_addr_i ( rd_addr ),
   .rd_data_o ( q_o     )
 );
 
+// RAM
 assign wr_en = ( wrreq_i && ( !full_o ) );
 
-assign rd_en = ( rdreq_i && ( !empty_o ) );
+assign rd_en = ( ( rdreq_i && output_has_valid && !output_is_last ) || need_load_output );
 
 always_ff @( posedge clk_i )
   begin
@@ -64,21 +70,47 @@ always_ff @( posedge clk_i )
       rd_addr <= ( rd_addr + rd_en );
   end
 
+// Internal state
+assign output_is_last   = ( output_has_valid && ( usedw_o == 1'b1 ) );
+
+assign need_load_output = ( fifo_has_data && ( !output_has_valid ) );
+
 always_ff @( posedge clk_i )
   begin
     if( srst_i )
-      usedw_o <= '0;
+      fifo_has_data <= 1'b0;
     else
-      usedw_o <= ( usedw_o + wr_en - rd_en );
+      fifo_has_data <= ( wr_en || ( usedw_o > 1'b1 ) );
   end
 
 always_ff @( posedge clk_i )
   begin
     if( srst_i )
-      empty_o <= 1'b1;
+      output_has_valid <= 1'b0;
     else
-      empty_o <= ( ( usedw_o - rd_en ) == '0 );
+      if( need_load_output )
+        output_has_valid <= 1'b1;
+      else
+        if( rdreq_i && output_is_last )
+          output_has_valid <= 1'b0;
   end
+
+// Output
+always_ff @( posedge clk_i )
+  begin
+    if( srst_i )
+      usedw_o <= '0;
+    else
+      if( rdreq_i && output_is_last )
+        usedw_o <= wr_en;
+      else
+        if( output_has_valid )
+          usedw_o <= ( usedw_o + wr_en - rd_en );
+        else
+          usedw_o <= ( usedw_o + wr_en );
+  end
+
+assign empty_o        = ( !output_has_valid );
 
 assign full_o         = usedw_o[AWIDTH];
 
