@@ -181,3 +181,28 @@ FPGA labs
 | usedw_o        | output    | AWIDTH+1 | The number of words stored in the FIFO |
 | almost_full_o  | output    | 1        | Is FIFO almost full                    |
 | almost_empty_o | output    | 1        | Is FIFO almost empty                   |
+
+## Task 2 Sorting
+[sorting](./sorting)
+
+[Specification](https://schaumont.dyn.wpi.edu/ece4530f19/pdf/mnl_avalon_spec.pdf)
+
+| Parameter   | Comment                            |
+|-------------|------------------------------------|
+| DWIDTH      | The width of the data              |
+| MAX_PKT_LEN | The maximum number of transactions |
+
+| Signal              | Direction | Bit size | Comment                                                      |
+|---------------------|-----------|----------|--------------------------------------------------------------|
+| clk_i               | input     | 1        | Posedge-triggered clock                                      |
+| srst_i              | input     | 1        | Synchronous reset                                            |
+| snk_data_i          | input     | DWIDTH   | Input data                                                   |
+| snk_startofpacket_i | input     | 1        | The start of the transaction                                 |
+| snk_endofpacket_i   | input     | 1        | The end of the transaction                                   |
+| snk_valid_i         | input     | 1        | Are snk_data_i, snk_startofpacket_i, snk_endofpacket_i valid |
+| snk_ready_o         | output    | 1        | If 0, the module is not ready to accept new data             |
+| src_data_o          | output    | DWIDTH   | Output data                                                  |
+| src_startofpacket_o | output    | 1        | The start of the transaction                                 |
+| src_endofpacket_o   | output    | 1        | The end of the transaction                                   |
+| src_valid_o         | output    | 1        | Are src_data_o, src_startofpacket_o, src_endofpacket_o valid |
+| src_ready_i         | input     | 1        | Feedback, to stop the output stream                          |
