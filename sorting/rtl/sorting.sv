@@ -18,7 +18,7 @@ module sorting #(
   input  logic              src_ready_i
 );
 
-localparam int unsigned AWIDTH = $clog2( MAX_PKT_LEN );
+localparam int unsigned AWIDTH = $clog2( MAX_PKT_LEN + 1 );
 
 enum
 {
@@ -33,7 +33,7 @@ logic [AWIDTH-1:0] avalon_addr;
 logic              avalon_a_wr_en;
 logic [DWIDTH-1:0] avalon_a_wr_data;
 
-assign avalon_a_wr_en   = ( snk_valid_i && ( ( state == INPUT_PACKET_S ) || ( next_state == INPUT_PACKET_S ) ) );
+assign avalon_a_wr_en   = ( snk_valid_i && ( ( state == INPUT_PACKET_S ) || snk_startofpacket_i ) );
 assign avalon_a_wr_data = snk_data_i;
 
 logic [AWIDTH-1:0] sort_a_addr;
@@ -69,9 +69,9 @@ always_ff @( posedge clk_i )
       avalon_addr <= '0;
     else
       if( state == SEND_S )
-        avalon_addr <= ( avalon_addr + src_ready_i );
+        avalon_addr <= ( avalon_addr + 1'b1 );
       else
-        if( ( state == INPUT_PACKET_S ) || ( next_state == INPUT_PACKET_S ) )
+        if( ( state == INPUT_PACKET_S ) || ( snk_valid_i && snk_startofpacket_i ) )
           avalon_addr <= ( avalon_addr + snk_valid_i );
         else
           avalon_addr <= '0;
@@ -82,7 +82,7 @@ always_ff @( posedge clk_i )
     if( srst_i )
       data_size <= '0;
     else
-      if( ( state == INPUT_PACKET_S ) && ( next_state == SORTING_S ) )
+      if( ( state == INPUT_PACKET_S ) && snk_valid_i && snk_endofpacket_i )
         data_size <= ( avalon_addr + 1'b1 );
   end
 
@@ -146,6 +146,6 @@ assign src_startofpacket_o = ( ( state == SEND_S ) && ( avalon_addr == 1'b1 ) );
 
 assign src_endofpacket_o   = ( ( state == SEND_S ) && ( avalon_addr == data_size ) );
 
-assign src_valid_o         = ( ( src_ready_i ) && ( state == SEND_S ) && ( avalon_addr >= 1'b1 ) );
+assign src_valid_o         = ( ( state == SEND_S ) && ( avalon_addr >= 1'b1 ) );
 
 endmodule

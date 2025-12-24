@@ -166,7 +166,7 @@ initial
     // Random data / random length
     repeat( 100 )
       begin
-        data = new [$urandom_range( 2, ( MAX_PKT_LEN - 1 ) )];
+        data = new [$urandom_range( 2, MAX_PKT_LEN )];
         for( int unsigned i = 0; i < data.size(); i++ )
           data[i] = $urandom_range( 0, ( ( 2 ** DWIDTH ) - 1 ) );
 
@@ -175,7 +175,7 @@ initial
       end
 
     // Random data / all lengths
-    for( int unsigned size = 2; size < MAX_PKT_LEN; size++ )
+    for( int unsigned size = 2; size <= MAX_PKT_LEN; size++ )
       begin
         data = new [size];
         for( int unsigned i = 0; i < data.size(); i++ )
