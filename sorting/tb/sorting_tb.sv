@@ -67,6 +67,13 @@ task automatic send_data(
           $stop;
         end
 
+      assert( src_valid == 1'b0 )
+      else
+        begin
+          $display( "Test Failed: src_valid_o != 0" );
+          $stop;
+        end
+
       if( $urandom_range( 1, 100 ) <= skip_chance )
         begin
           snk_data          <= 'x;
