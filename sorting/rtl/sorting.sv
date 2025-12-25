@@ -82,7 +82,7 @@ always_ff @( posedge clk_i )
     if( srst_i )
       data_size <= '0;
     else
-      if( ( state == INPUT_PACKET_S ) && snk_valid_i && snk_endofpacket_i )
+      if( snk_valid_i && snk_endofpacket_i )
         data_size <= ( avalon_addr + 1'b1 );
   end
 
@@ -113,8 +113,11 @@ always_comb
     next_state = state;
     case( state )
       WAIT_S:
-        if( snk_valid_i && snk_startofpacket_i )
-          next_state = INPUT_PACKET_S;
+        if( snk_valid_i && snk_endofpacket_i )
+          next_state = SORTING_S;
+        else
+          if( snk_valid_i && snk_startofpacket_i )
+            next_state = INPUT_PACKET_S;
       INPUT_PACKET_S:
         if( snk_valid_i && snk_endofpacket_i )
           next_state = SORTING_S;
