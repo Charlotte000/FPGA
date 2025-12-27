@@ -33,7 +33,8 @@ logic [AWIDTH-1:0] avalon_addr;
 logic              avalon_a_wr_en;
 logic [DWIDTH-1:0] avalon_a_wr_data;
 
-assign avalon_a_wr_en   = ( snk_valid_i && ( ( state == INPUT_PACKET_S ) || snk_startofpacket_i ) );
+assign avalon_a_wr_en   = ( snk_valid_i &&
+                            ( ( state == INPUT_PACKET_S ) || ( ( state == WAIT_S ) && snk_startofpacket_i ) ) );
 assign avalon_a_wr_data = snk_data_i;
 
 logic [AWIDTH-1:0] sort_a_addr;
@@ -68,13 +69,10 @@ always_ff @( posedge clk_i )
     if( srst_i )
       avalon_addr <= '0;
     else
-      if( state == SEND_S )
+      if( ( state == SEND_S ) || avalon_a_wr_en )
         avalon_addr <= ( avalon_addr + 1'b1 );
       else
-        if( ( state == INPUT_PACKET_S ) || ( snk_valid_i && snk_startofpacket_i ) )
-          avalon_addr <= ( avalon_addr + snk_valid_i );
-        else
-          avalon_addr <= '0;
+        avalon_addr <= '0;
   end
 
 always_ff @( posedge clk_i )
@@ -82,7 +80,7 @@ always_ff @( posedge clk_i )
     if( srst_i )
       data_size <= '0;
     else
-      if( snk_valid_i && snk_endofpacket_i )
+      if( avalon_a_wr_en && snk_endofpacket_i )
         data_size <= ( avalon_addr + 1'b1 );
   end
 

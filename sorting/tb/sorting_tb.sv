@@ -6,6 +6,8 @@ module sorting_tb #(
   parameter time         PERIOD      = 10ns
 );
 
+localparam int unsigned DATA_MAX = ( ( 2 ** DWIDTH ) - 1 );
+
 bit                clk;
 bit                srst;
 
@@ -21,6 +23,10 @@ logic              src_endofpacket;
 logic              src_valid;
 
 logic              src_ready;
+
+typedef logic [DWIDTH-1:0] data_t [];
+
+mailbox #( data_t ) mbx = new();
 
 sorting #(
   .DWIDTH      ( DWIDTH      ),
@@ -53,8 +59,8 @@ task automatic clock();
 endtask
 
 task automatic send_data(
-  input logic [DWIDTH-1:0] data        [],
-  input int unsigned       skip_chance
+  input data_t       data,
+  input int unsigned skip_chance
 );
   int unsigned i = 0;
 
@@ -98,85 +104,141 @@ task automatic send_data(
   snk_startofpacket <= 1'b0;
   snk_endofpacket   <= 1'b0;
   snk_valid         <= 1'b0;
+
+  mbx.put( data );
 endtask
 
-task automatic wait_for_data(
-  input int unsigned data_size,
-  input int unsigned max_wait_tick = ( ( data_size * data_size * 2 ) + 2 )
-);
-  for( int unsigned i = 0; i < max_wait_tick; i++ )
+task automatic wait_for_next_packet( input bit send_gibberish = 1'b0 );
+  do
     begin
-      assert( snk_ready == ( i == 0 ) )
-      else
+      if( send_gibberish )
         begin
-          $display( "Test Failed: snk_ready != %b", ( i == 0 ) );
-          $stop;
+          // Send gibberish
+          snk_data          <= $urandom_range( 0, DATA_MAX );
+          snk_startofpacket <= $urandom_range( 0, 1 );
+          snk_endofpacket   <= $urandom_range( 0, 1 );
+          snk_valid         <= $urandom_range( 0, 1 );
         end
-
-      if( src_valid && src_startofpacket )
-        return;
 
       @( posedge clk );
     end
+  while( !snk_ready );
 
-  assert( src_valid == 1'b1 )
-  else
-    begin
-      $display( "Test Failed: src_valid != 1" );
-      $stop;
-    end
-
-  assert( src_startofpacket == 1'b1 )
-  else
-    begin
-      $display( "Test Failed: src_startofpacket != 1" );
-      $stop;
-    end
+  snk_data          <= 'x;
+  snk_startofpacket <= 1'b0;
+  snk_endofpacket   <= 1'b0;
+  snk_valid         <= 1'b0;
 endtask
 
-task automatic compare_data( input logic [DWIDTH-1:0] data [] );
-  for( int unsigned i = 0; i < data.size(); i++ )
-    begin
-      bit end_of_packet = ( i == ( data.size() - 1 ) );
+task automatic tx();
+  data_t data;
 
-      if( !src_valid )
+  // Random data / random length
+  repeat( 100 )
+    begin
+      data = new [$urandom_range( 1, MAX_PKT_LEN )];
+      foreach( data[i] )
+        data[i] = $urandom_range( 0, DATA_MAX );
+
+      send_data( data, 0 );
+      // send_data( data, 50 );
+      wait_for_next_packet();
+    end
+
+  // Random data / all lengths
+  for( int unsigned size = 1; size <= MAX_PKT_LEN; size++ )
+    begin
+      data = new [size];
+      foreach( data[i] )
+        data[i] = $urandom_range( 0, DATA_MAX );
+
+      send_data( data, 0 );
+      wait_for_next_packet();
+    end
+
+  // Sorted data
+  data = new [10];
+  for( int unsigned i = 0; i < data.size(); i++ )
+    data[i] = i;
+
+  send_data( data, 0 );
+  wait_for_next_packet();
+
+  // Reverse data
+  data = new [10];
+  for( int unsigned i = 0; i < data.size(); i++ )
+    data[i] = ( 10 - i );
+
+  send_data( data, 0 );
+
+  // Timeout
+  repeat( data.size() * data.size() * 2 )
+    @( posedge clk );
+endtask
+
+task automatic rx();
+  forever
+    begin
+      int unsigned i;
+      data_t       data;
+
+      // Wait for packet
+      if( ( !src_valid ) || ( !src_startofpacket ) )
         begin
           @( posedge clk );
           continue;
         end
 
-      assert( src_data == data[i] )
+      assert( mbx.try_get( data ) == 1'b1 )
       else
         begin
-          $display( "Test Failed: src_data_o ( %0d != %0d )", src_data, data[i] );
+          $display( "Test Failed: missing data" );
           $stop;
         end
+      data.sort();
 
-      assert( src_endofpacket == end_of_packet )
-      else
+      // Recieve packet
+      i = 0;
+      while( i < data.size() )
         begin
-          $display( "Test Failed: src_endofpacket_o != %b", end_of_packet );
-          $stop;
-        end
+          bit sop = ( i == 0 );
+          bit eop = ( i == ( data.size() - 1 ) );
 
-      @( posedge clk );
+          if( !src_valid )
+            begin
+              @( posedge clk );
+              continue;
+            end
+
+          assert( src_data == data[i] )
+          else
+            begin
+              $display( "Test Failed: src_data_o ( %0d != %0d )", src_data, data[i] );
+              $stop;
+            end
+
+          assert( src_startofpacket == sop )
+          else
+            begin
+              $display( "Test Failed: src_startofpacket_o != %b", sop );
+              $stop;
+            end
+
+          assert( src_endofpacket == eop )
+          else
+            begin
+              $display( "Test Failed: src_endofpacket_o != %b", eop );
+              $stop;
+            end
+
+          i++;
+          @( posedge clk );
+        end
     end
-endtask
-
-task automatic test_sort(
-  input logic        [DWIDTH-1:0] data                [],
-  input int unsigned              send_skip_chance
-);
-  send_data( data, send_skip_chance );
-  data.sort();
-  wait_for_data( data.size() );
-  compare_data( data );
 endtask
 
 initial
   begin
-    logic [DWIDTH-1:0] data [];
-
     snk_startofpacket <= 1'b0;
     snk_endofpacket   <= 1'b0;
     snk_valid         <= 1'b0;
@@ -188,43 +250,11 @@ initial
 
     reset();
 
-    // Random data / random length
-    repeat( 100 )
-      begin
-        data = new [$urandom_range( 1, MAX_PKT_LEN )];
-        foreach( data[i] )
-          data[i] = $urandom_range( 0, ( ( 2 ** DWIDTH ) - 1 ) );
+    fork
+      tx();
+      rx();
+    join_any
 
-        test_sort( data, 50 );
-        data.delete();
-      end
-
-    // Random data / all lengths
-    for( int unsigned size = 1; size <= MAX_PKT_LEN; size++ )
-      begin
-        data = new [size];
-        foreach( data[i] )
-          data[i] = $urandom_range( 0, ( ( 2 ** DWIDTH ) - 1 ) );
-
-        test_sort( data, 0 );
-        data.delete();
-      end
-
-    // Sorted data
-    data = new [10];
-    for( int unsigned i = 0; i < data.size(); i++ )
-      data[i] = i;
-
-    test_sort( data, 0 );
-    data.delete();
-
-    // Reverse data
-    data = new [10];
-    for( int unsigned i = 0; i < data.size(); i++ )
-      data[i] = ( 10 - i );
-
-    test_sort( data, 0 );
-    data.delete();
 
     $display( "Tests Passed" );
     $stop;
