@@ -69,10 +69,13 @@ always_ff @( posedge clk_i )
     if( srst_i )
       avalon_addr <= '0;
     else
-      if( ( state == SEND_S ) || avalon_a_wr_en )
+      if( state == SEND_S )
         avalon_addr <= ( avalon_addr + 1'b1 );
       else
-        avalon_addr <= '0;
+        if( ( state == INPUT_PACKET_S ) || avalon_a_wr_en )
+          avalon_addr <= ( avalon_addr + snk_valid_i );
+        else
+          avalon_addr <= '0;
   end
 
 always_ff @( posedge clk_i )

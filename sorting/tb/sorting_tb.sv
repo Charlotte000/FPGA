@@ -108,10 +108,19 @@ task automatic send_data(
   mbx.put( data );
 endtask
 
-task automatic wait_for_next_packet( input bit send_gibberish = 1'b0 );
-  do
+task automatic wait_for_next_packet(
+  input int unsigned data_size,
+  input bit          send_gibberish = 1'b1,
+  input int unsigned max_wait_tick  = ( ( data_size * data_size * 2 ) + 2 )
+);
+  repeat( max_wait_tick )
     begin
-      if( send_gibberish )
+      @( posedge clk );
+
+      if( snk_ready )
+        return;
+
+      if( send_gibberish && ( !src_valid ) )
         begin
           // Send gibberish
           snk_data          <= $urandom_range( 0, DATA_MAX );
@@ -119,15 +128,17 @@ task automatic wait_for_next_packet( input bit send_gibberish = 1'b0 );
           snk_endofpacket   <= $urandom_range( 0, 1 );
           snk_valid         <= $urandom_range( 0, 1 );
         end
-
-      @( posedge clk );
+      else
+        begin
+          snk_data          <= 'x;
+          snk_startofpacket <= 1'b0;
+          snk_endofpacket   <= 1'b0;
+          snk_valid         <= 1'b0;
+        end
     end
-  while( !snk_ready );
 
-  snk_data          <= 'x;
-  snk_startofpacket <= 1'b0;
-  snk_endofpacket   <= 1'b0;
-  snk_valid         <= 1'b0;
+  $display( "Test Failed: no data output" );
+  $stop;
 endtask
 
 task automatic tx();
@@ -140,9 +151,8 @@ task automatic tx();
       foreach( data[i] )
         data[i] = $urandom_range( 0, DATA_MAX );
 
-      send_data( data, 0 );
-      // send_data( data, 50 );
-      wait_for_next_packet();
+      send_data( data, 50 );
+      wait_for_next_packet( data.size() );
     end
 
   // Random data / all lengths
@@ -153,7 +163,7 @@ task automatic tx();
         data[i] = $urandom_range( 0, DATA_MAX );
 
       send_data( data, 0 );
-      wait_for_next_packet();
+      wait_for_next_packet( data.size() );
     end
 
   // Sorted data
@@ -162,7 +172,7 @@ task automatic tx();
     data[i] = i;
 
   send_data( data, 0 );
-  wait_for_next_packet();
+  wait_for_next_packet( data.size() );
 
   // Reverse data
   data = new [10];
