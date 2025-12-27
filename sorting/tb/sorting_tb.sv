@@ -120,7 +120,7 @@ task automatic wait_for_next_packet(
       if( snk_ready )
         return;
 
-      if( send_gibberish && ( !src_valid ) )
+      if( send_gibberish && ( !( src_endofpacket && src_valid ) ) )
         begin
           // Send gibberish
           snk_data          <= $urandom_range( 0, DATA_MAX );
