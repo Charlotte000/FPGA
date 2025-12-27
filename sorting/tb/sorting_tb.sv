@@ -104,16 +104,34 @@ task automatic wait_for_data(
   input int unsigned data_size,
   input int unsigned max_wait_tick = ( ( data_size * data_size * 2 ) + 2 )
 );
-  repeat( max_wait_tick )
+  for( int unsigned i = 0; i < max_wait_tick; i++ )
     begin
+      assert( snk_ready == ( i == 0 ) )
+      else
+        begin
+          $display( "Test Failed: snk_ready != %b", ( i == 0 ) );
+          $stop;
+        end
+
       if( src_valid && src_startofpacket )
         return;
 
       @( posedge clk );
     end
 
-  $display( "Test Failed: src_startofpacket_o != 1" );
-  $stop;
+  assert( src_valid == 1'b1 )
+  else
+    begin
+      $display( "Test Failed: src_valid != 1" );
+      $stop;
+    end
+
+  assert( src_startofpacket == 1'b1 )
+  else
+    begin
+      $display( "Test Failed: src_startofpacket != 1" );
+      $stop;
+    end
 endtask
 
 task automatic compare_data( input logic [DWIDTH-1:0] data [] );
