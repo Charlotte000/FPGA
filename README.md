@@ -206,3 +206,29 @@ FPGA labs
 | src_endofpacket_o   | output    | 1        | The end of the transaction                                   |
 | src_valid_o         | output    | 1        | Are src_data_o, src_startofpacket_o, src_endofpacket_o valid |
 | src_ready_i         | input     | 1        | Feedback, to stop the output stream                          |
+
+# Lab3
+
+## Task 1 LIFO
+[lifo](./lifo)
+
+| Parameter          | Comment                                           |
+|--------------------|---------------------------------------------------|
+| DWIDTH             | The width of the data                             |
+| AWIDTH             | The width of the address data                     |
+| ALMOST_FULL_VALUE  | The threshold value for the almost_full_o signal  |
+| ALMOST_EMPTY_VALUE | The threshold value for the almost_empty_o signal |
+
+| Signal         | Direction | Bit size | Comment                                |
+|----------------|-----------|----------|----------------------------------------|
+| clk_i          | input     | 1        | Posedge-triggered clock                |
+| srst_i         | input     | 1        | Synchronous reset                      |
+| data_i         | input     | DWIDTH   | Data to be written in the LIFO         |
+| wrreq_i        | input     | 1        | Write operation request                |
+| rdreq_i        | input     | 1        | Read operation request                 |
+| q_o            | output    | DWIDTH   | The data read from the read request    |
+| empty_o        | output    | 1        | Is LIFO empty                          |
+| full_o         | output    | 1        | Is LIFO full                           |
+| usedw_o        | output    | AWIDTH+1 | The number of words stored in the LIFO |
+| almost_full_o  | output    | 1        | Is LIFO almost full                    |
+| almost_empty_o | output    | 1        | Is LIFO almost empty                   |
