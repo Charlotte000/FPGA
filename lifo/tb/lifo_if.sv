@@ -16,24 +16,4 @@ logic              almost_full;
 logic              full;
 logic [AWIDTH:0]   usedw;
 
-modport tx (
-  input clk,
-  input srst,
-  input wrreq,
-  input data,
-  input rdreq
-);
-
-modport rx (
-  input  clk,
-  input  srst,
-
-  output q,
-  output almost_empty,
-  output empty,
-  output almost_full,
-  output full,
-  output usedw
-);
-
 endinterface

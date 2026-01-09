@@ -232,3 +232,35 @@ FPGA labs
 | usedw_o        | output    | AWIDTH+1 | The number of words stored in the LIFO |
 | almost_full_o  | output    | 1        | Is LIFO almost full                    |
 | almost_empty_o | output    | 1        | Is LIFO almost empty                   |
+
+## Task 2 AST Width Extender
+[ast_width_extender](./ast_width_extender)
+
+[Specification](https://schaumont.dyn.wpi.edu/ece4530f19/pdf/mnl_avalon_spec.pdf)
+
+| Parameter   | Comment                            |
+|-------------|------------------------------------|
+| DATA_IN_W   | The width of the input data        |
+| DATA_OUT_W  | The width of the output data       |
+| EMPTY_IN_W  | The width of the empty input data  |
+| EMPTY_OUT_W | The width of the empty output data |
+| CHANNEL_W   | The width of channel signals       |
+
+| Signal              | Direction | Bit size    | Comment                                                      |
+|---------------------|-----------|-------------|--------------------------------------------------------------|
+| clk_i               | input     | 1           | Posedge-triggered clock                                      |
+| srst_i              | input     | 1           | Synchronous reset                                            |
+| ast_data_i          | input     | DATA_IN_W   | Input data                                                   |
+| ast_startofpacket_i | input     | 1           | The start of the input transaction                           |
+| ast_endofpacket_i   | input     | 1           | The end of the input transaction                             |
+| ast_valid_i         | input     | 1           | Are ast_data_i, ast_startofpacket_i, ast_endofpacket_i valid |
+| ast_empty_i         | input     | EMPTY_IN_W  | How many empty bytes/characters are in a word                |
+| ast_channel_i       | input     | CHANNEL_W   | Accompanying information                                     |
+| ast_ready_o         | output    | 1           | If 0, the module is not ready to accept new data             |
+| ast_data_o          | output    | DATA_OUT_W  | Output data                                                  |
+| ast_startofpacket_o | output    | 1           | The start of the output transaction                          |
+| ast_endofpacket_o   | output    | 1           | The end of the output transaction                            |
+| ast_valid_o         | output    | 1           | Are ast_data_o, ast_startofpacket_o, ast_endofpacket_o valid |
+| ast_empty_o         | output    | EMPTY_OUT_W | How many empty bytes/characters are in a word                |
+| ast_channel_o       | output    | CHANNEL_W   | Accompanying information                                     |
+| ast_ready_i         | input     | 1           | Feedback, to stop the output stream                          |
