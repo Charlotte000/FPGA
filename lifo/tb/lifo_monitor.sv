@@ -26,30 +26,46 @@ class lifo_monitor #(
     else $display( "%5d ns: %12s expected %5d but got %0d", timestamp, param_name, ref_val, dut_val );
   endfunction
 
-  task run();
+  function void reset();
+    this.stack.delete();
+  endfunction
+
+  task listen( input int unsigned count );
     logic [DWIDTH-1:0] q;
     time timestamp;
 
-    forever
+    repeat( count )
       begin
-        if( this._if.rdreq && ( this.stack.size() > 0 ) )
-          q = this.stack.pop_back();
-        else
-          q = 'x;
+        q = 'x;
 
-        if( this._if.wrreq && ( this.stack.size() < STACK_SIZE ) )
+        // Read-only
+        if( this._if.rdreq && ( !this._if.wrreq ) && ( this.stack.size() > 0 ) )
+          q = this.stack.pop_back();
+
+        // Write-only
+        if( ( !this._if.rdreq ) && this._if.wrreq && ( this.stack.size() < STACK_SIZE ) )
           this.stack.push_back( this._if.data );
+
+        // Read-write
+        if( this._if.rdreq && this._if.wrreq )
+          begin
+            if( this.stack.size() > 0 )
+              q = this.stack.pop_back();
+
+            if( this.stack.size() < ( STACK_SIZE - 1 ) )
+              this.stack.push_back( this._if.data );
+          end
 
         timestamp = $time;
 
         @( posedge this._if.clk );
 
-        this.check( "q",            this._if.q,                 q                                          , timestamp );
-        this.check( "almost_empty", this._if.almost_empty,      ( this.stack.size() <= ALMOST_EMPTY_VALUE ), timestamp );
-        this.check( "empty",        this._if.empty,             ( this.stack.size() == 0                  ), timestamp );
-        this.check( "almost_full",  this._if.almost_full,       ( this.stack.size() >= ALMOST_FULL_VALUE  ), timestamp );
-        this.check( "full",         this._if.full,              ( this.stack.size() == STACK_SIZE         ), timestamp );
-        this.check( "usedw",        this._if.usedw[AWIDTH-1:0], ( this.stack.size()                       ), timestamp );
+        this.check( "q",            this._if.q,            q                                          , timestamp );
+        this.check( "almost_empty", this._if.almost_empty, ( this.stack.size() <= ALMOST_EMPTY_VALUE ), timestamp );
+        this.check( "empty",        this._if.empty,        ( this.stack.size() == 0                  ), timestamp );
+        this.check( "almost_full",  this._if.almost_full,  ( this.stack.size() >= ALMOST_FULL_VALUE  ), timestamp );
+        this.check( "full",         this._if.full,         ( this.stack.size() == STACK_SIZE         ), timestamp );
+        this.check( "usedw",        this._if.usedw,        ( this.stack.size()                       ), timestamp );
       end
   endtask
 endclass

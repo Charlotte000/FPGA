@@ -55,7 +55,7 @@ class lifo_generator #(
       begin
         this._if.rdreq <= 1'b0;
         this._if.wrreq <= 1'b1;
-        this._if.data  <= i;
+        this._if.data  <= $urandom_range( 0, ( 2 ** DWIDTH - 1 ) );
 
         @( posedge this._if.clk );
       end
@@ -85,63 +85,4 @@ class lifo_generator #(
 
     this.reset_output();
   endtask
-
-  task run();
-    this.send_timeout( 100 );
-
-    // Full write
-    $display( "Begin test: Full write" );
-    this.send_fill( 2 ** AWIDTH );
-    $display( "End test:   Full write" );
-
-    this.send_timeout( 100 );
-
-    // Full read
-    $display( "Begin test: Full read" );
-    this.send_read( 2 ** AWIDTH );
-    $display( "End test:   Full read" );
-
-    this.send_timeout( 100 );
-
-    // Empty read/write
-    $display( "Begin test: Empty read/write" );
-    this.send_random( 1, 100, 100 );
-    $display( "End test:   Empty read/write" );
-
-    this.send_timeout( 100 );
-
-    // Read/write
-    this.send_fill( ( 2 ** AWIDTH ) / 2 );
-    $display( "Begin test: Read/write" );
-    this.send_random( 1, 100, 100 );
-    $display( "end test:   Read/write" );
-
-    this.send_timeout( 100 );
-
-    // Full read/write
-    this.send_fill( ( 2 ** AWIDTH ) / 2 );
-    $display( "Begin test: Full read/write" );
-    this.send_random( 1, 100, 100 );
-    $display( "End test:   Full read/write" );
-
-    this.send_timeout( 100 );
-
-    // Overflow
-    $display( "Begin test: Overflow" );
-    this.send_fill( ( 2 ** AWIDTH ) * 2 );
-    this.send_read( ( 2 ** AWIDTH ) * 2 );
-    $display( "End test:   Overflow" );
-
-    this.send_timeout( 100 );
-
-    // Random
-    $display( "Begin test: Random" );
-    this.send_random( 1000, 25, 75 );
-    this.send_random( 1000, 50, 50 );
-    this.send_random( 10000, 75, 50 );
-    $display( "End test:   Random" );
-
-    this.send_timeout( 100 );
-  endtask
-
 endclass
