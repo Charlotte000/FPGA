@@ -2,10 +2,24 @@ class lifo_generator #(
   parameter int unsigned DWIDTH,
   parameter int unsigned AWIDTH
 );
-  local virtual lifo_if _if;
+  local virtual lifo_if #(
+    .DWIDTH ( DWIDTH ),
+    .AWIDTH ( AWIDTH )
+  ) _if;
 
-  function new( virtual lifo_if _if );
+  function new(
+    input virtual lifo_if #(
+      .DWIDTH ( DWIDTH ),
+      .AWIDTH ( AWIDTH )
+    ) _if
+  );
     this._if = _if;
+  endfunction
+
+  function void reset_output();
+    this._if.data  <= 'x;
+    this._if.wrreq <= 1'b0;
+    this._if.rdreq <= 1'b0;
   endfunction
 
   task send_random(
@@ -15,9 +29,7 @@ class lifo_generator #(
   );
     repeat( count )
       begin
-        this._if.rdreq <= 1'b0;
-        this._if.wrreq <= 1'b0;
-        this._if.data  <= 'x;
+        this.reset_output();
 
         // Random read
         if( $urandom_range( 1, 100 ) <= rd_chance )
@@ -34,6 +46,8 @@ class lifo_generator #(
 
         @( posedge this._if.clk );
       end
+
+    this.reset_output();
   endtask
 
   task send_fill( input int unsigned count );
@@ -45,6 +59,8 @@ class lifo_generator #(
 
         @( posedge this._if.clk );
       end
+
+    this.reset_output();
   endtask
 
   task send_read( input int unsigned count );
@@ -56,17 +72,18 @@ class lifo_generator #(
 
         @( posedge this._if.clk );
       end
+
+    this.reset_output();
   endtask
 
   task send_timeout( input int unsigned count );
     repeat( count )
       begin
-        this._if.rdreq <= 1'b0;
-        this._if.wrreq <= 1'b0;
-        this._if.data  <= 'x;
-
+        this.reset_output();
         @( posedge this._if.clk );
       end
+
+    this.reset_output();
   endtask
 
   task run();

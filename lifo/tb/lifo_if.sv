@@ -1,6 +1,6 @@
 interface lifo_if #(
-  parameter int unsigned DWIDTH = 16,
-  parameter int unsigned AWIDTH = 8
+  parameter int unsigned DWIDTH,
+  parameter int unsigned AWIDTH
 )(
   input logic clk,
   input logic srst

@@ -7,9 +7,17 @@ class lifo_monitor #(
   localparam int unsigned STACK_SIZE = ( 2 ** AWIDTH );
 
   local         logic   [DWIDTH-1:0] stack [$:STACK_SIZE];
-  local virtual lifo_if              _if;
+  local virtual lifo_if #(
+    .DWIDTH ( DWIDTH ),
+    .AWIDTH ( AWIDTH )
+  ) _if;
 
-  function new( virtual lifo_if _if );
+  function new(
+    input virtual lifo_if #(
+      .DWIDTH ( DWIDTH ),
+      .AWIDTH ( AWIDTH )
+    ) _if
+  );
     this._if = _if;
   endfunction
 
