@@ -56,14 +56,14 @@ class ast_we_monitor #(
     return this.check( dut_val === ref_val, $sformatf( "%12s expected %5d but got %0d", signal_name, ref_val, dut_val ) );
   endfunction
 
-  task run();
+  task listen( input int unsigned count );
     ast_we_packet #(
       .CHANNEL_W ( CHANNEL_W  ),
       .EMPTY_W   ( EMPTY_IN_W )
     ) packet;
     logic data [$];
 
-    forever
+    repeat( count )
       begin
         if( ( !this._if.src_valid ) || ( !this._if.src_ready ) )
           begin

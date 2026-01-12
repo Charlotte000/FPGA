@@ -7,9 +7,6 @@ class ast_we_generator #(
   parameter int unsigned DATA_OUT_W,
   parameter int unsigned EMPTY_OUT_W
 );
-  localparam int unsigned SRC_READY_CHANCE  = 100;
-  localparam int unsigned MAX_PACKET_LENGTH = ( 65536 * 8 );
-
   localparam int unsigned DATA_IN_MAX       = ( ( 2 ** DATA_IN_W ) - 1  );
   localparam int unsigned EMPTY_IN_MAX      = ( ( 2 ** EMPTY_IN_W ) - 1 );
   localparam int unsigned CHANNEL_MAX       = ( ( 2 ** CHANNEL_W ) - 1  );
@@ -124,90 +121,4 @@ class ast_we_generator #(
         @( posedge this._if.clk );
       end
   endtask
-
-  task run();
-    fork
-      begin
-        // Different lengths
-        $display( "Begin test: Different lengths" );
-        for( int unsigned length = 1; length < 100; length++ )
-          begin
-            ast_we_packet #(
-              .CHANNEL_W ( CHANNEL_W  ),
-              .EMPTY_W   ( EMPTY_IN_W )
-            ) packet = new( DATA_IN_W * length );
-            this.send_packet( packet, 50 );
-          end
-        begin
-          // Min length ( 1 byte )
-          ast_we_packet #(
-            .CHANNEL_W ( CHANNEL_W  ),
-            .EMPTY_W   ( EMPTY_IN_W )
-          ) packet = new(
-            .data_size ( DATA_IN_W * 1                            ), // 8 bytes
-            .empty     ( ( EMPTY_IN_W )'( ( DATA_IN_W / 8 ) - 1 ) )  // 7 bytes
-          );
-          this.send_packet( packet, 50 );
-        end
-        begin
-          // Max length ( 65536 bytes )
-          ast_we_packet #(
-            .CHANNEL_W ( CHANNEL_W  ),
-            .EMPTY_W   ( EMPTY_IN_W )
-          ) packet = new(
-            .data_size ( MAX_PACKET_LENGTH ),
-            .empty     ( '0                )
-          );
-          this.send_packet( packet, 50 );
-        end
-        $display( "End test:   Different lengths" );
-
-        this.send_timeout( 100 );
-
-        // Different write chances
-        $display( "Begin test: Different write chances" );
-        this.send_random( 100,  25 );
-        this.send_random( 100,  50 );
-        this.send_random( 100,  75 );
-        this.send_random( 100, 100 );
-        $display( "End test:   Different write chances" );
-
-        this.send_timeout( 100 );
-
-        // Same channel
-        $display( "Begin test: Same channel" );
-        repeat( 10 )
-          begin
-            ast_we_packet #(
-              .CHANNEL_W ( CHANNEL_W  ),
-              .EMPTY_W   ( EMPTY_IN_W )
-            ) packet = new(
-              .data_size ( DATA_IN_W * $urandom_range( 1, 100 ) ),
-              .channel   ( ( CHANNEL_W )'( 1 )                  )
-            );
-            this.send_packet( packet, 50 );
-          end
-        $display( "End test:   Same channel" );
-
-        this.send_timeout( 100 );
-
-        // Random input (with ast_valid_i = 0)
-        $display( "Begin test: Random input" );
-        this.send_gibberish( 100 );
-        $display( "End test:   Random input" );
-
-        this.send_timeout( 100 );
-      end
-
-      begin
-        forever
-          begin
-            this._if.src_ready <= ( $urandom_range( 0, 100 ) <= SRC_READY_CHANCE );
-            @( posedge this._if.clk );
-          end
-      end
-    join_any
-
-  endtask
-
 endclass
