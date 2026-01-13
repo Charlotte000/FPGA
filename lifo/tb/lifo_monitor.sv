@@ -36,8 +36,6 @@ class lifo_monitor #(
 
     repeat( count )
       begin
-        q = 'x;
-
         // Read-only
         if( this._if.rdreq && ( !this._if.wrreq ) && ( this.stack.size() > 0 ) )
           q = this.stack.pop_back();
