@@ -25,7 +25,7 @@ logic [EMPTY_OUT_W-1:0] src_empty;
 logic [CHANNEL_W-1:0]   src_channel;
 logic                   src_ready;
 
-modport generator(
+modport tx(
   input  clk,
   input  srst,
 
@@ -41,7 +41,7 @@ modport generator(
   output src_ready
 );
 
-modport monitor(
+modport rx(
   input clk,
   input srst,
 

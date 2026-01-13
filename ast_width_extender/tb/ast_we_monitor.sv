@@ -1,4 +1,5 @@
 `include "ast_we_packet.sv"
+`include "ast_we_rx_driver.sv"
 
 class ast_we_monitor #(
   parameter int unsigned DATA_IN_W,
@@ -7,20 +8,13 @@ class ast_we_monitor #(
   parameter int unsigned DATA_OUT_W,
   parameter int unsigned EMPTY_OUT_W
 );
-  local virtual ast_we_if #(
+  local ast_we_rx_driver #(
     .DATA_IN_W   ( DATA_IN_W   ),
     .EMPTY_IN_W  ( EMPTY_IN_W  ),
     .CHANNEL_W   ( CHANNEL_W   ),
     .DATA_OUT_W  ( DATA_OUT_W  ),
     .EMPTY_OUT_W ( EMPTY_OUT_W )
-  ).monitor _if;
-
-  local mailbox #(
-    ast_we_packet #(
-      .CHANNEL_W ( CHANNEL_W  ),
-      .EMPTY_W   ( EMPTY_IN_W )
-    )
-  ) mbx;
+  ) driver;
 
   function new(
     input virtual ast_we_if #(
@@ -29,16 +23,9 @@ class ast_we_monitor #(
       .CHANNEL_W   ( CHANNEL_W   ),
       .DATA_OUT_W  ( DATA_OUT_W  ),
       .EMPTY_OUT_W ( EMPTY_OUT_W )
-    ).monitor _if,
-    input mailbox #(
-      ast_we_packet #(
-        .CHANNEL_W ( CHANNEL_W  ),
-        .EMPTY_W   ( EMPTY_IN_W )
-      )
-    ) mbx
+    ).rx _if
   );
-    this._if = _if;
-    this.mbx = mbx;
+    this.driver = new( _if );
   endfunction
 
   function bit check( input bit status, input string error_msg );
@@ -52,56 +39,40 @@ class ast_we_monitor #(
     return 1'b1;
   endfunction
 
-  function bit checkSignal( input integer unsigned dut_val, input integer unsigned ref_val, input string signal_name );
-    return this.check( dut_val === ref_val, $sformatf( "%12s expected %5d but got %0d", signal_name, ref_val, dut_val ) );
-  endfunction
+  task wait_for_ready();
+    wait( this.driver.mbx.num() == 0 );
+  endtask
 
-  task listen( input int unsigned count );
-    ast_we_packet #(
-      .CHANNEL_W ( CHANNEL_W  ),
-      .EMPTY_W   ( EMPTY_IN_W )
-    ) packet;
-    logic data [$];
+  task start_listen( input mailbox #( ast_we_packet #( CHANNEL_W ) ) tx_mbx );
+    fork
+      this.driver.rx();
 
-    repeat( count )
       begin
-        if( ( !this._if.src_valid ) || ( !this._if.src_ready ) )
+        ast_we_packet #( CHANNEL_W ) rx_packet;
+        ast_we_packet #( CHANNEL_W ) tx_packet;
+        forever
           begin
-            @( posedge this._if.clk );
-            continue;
-          end
+            this.driver.mbx.get( rx_packet );
+            tx_mbx.get( tx_packet );
 
-        if( this._if.src_startofpacket )
-          begin
-            if( !this.check( ( data.size() == 0 ), "unexpected ast_startofpacket_o" ) )
+            void'( this.check(
+              tx_packet.channel == rx_packet.channel,
+              $sformatf( "ast_channel_o expected %5d but got %5d", tx_packet.channel, rx_packet.channel )
+            ) );
+
+            if( this.check(
+              tx_packet.data.size() == rx_packet.data.size(),
+              $sformatf( "packet size expected %5d but got %5d (channel=%0d)", tx_packet.data.size(), rx_packet.data.size(), rx_packet.channel )
+            ) )
               begin
-                data.delete();
-                void'( this.mbx.try_get( packet ) );
-                @( posedge this._if.clk );
-                continue;
+                void'( this.check(
+                  tx_packet.data == rx_packet.data,
+                  $sformatf( "wrong packet data (channel=%0d)", rx_packet.channel )
+                ) );
               end
           end
-
-        data = { >>{ data, this._if.src_data } };
-
-        if( this._if.src_endofpacket )
-          begin
-            // Check packet
-            void'( this.check( ( data.size() != 0 ),                       "unexpected ast_endofpacket_o" ) );
-            void'( this.check( ( this.mbx.try_get( packet ) != 0 ),        "mailbox is empty"             ) );
-            void'( this.checkSignal( this._if.src_channel, packet.channel, "ast_channel_o"                ) );
-
-            if( this.checkSignal( ( data.size() - this._if.src_empty ), ( packet.data.size() - packet.empty ), "packet bit count" ) )
-              void'( this.check(
-                ( data[this._if.src_empty:data.size()-1] === packet.data[packet.empty:packet.data.size()-1] ),
-                $sformatf( "wrong data ( channel=%d )", packet.channel )
-              ) );
-
-            data.delete();
-          end
-
-        @( posedge this._if.clk );
       end
+    join_any
   endtask
 
 endclass
