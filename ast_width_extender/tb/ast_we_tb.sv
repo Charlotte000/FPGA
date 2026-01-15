@@ -73,7 +73,7 @@ ast_monitor #(
   .DATA_W    ( DATA_OUT_W  ),
   .EMPTY_W   ( EMPTY_OUT_W ),
   .CHANNEL_W ( CHANNEL_W   )
-) monitor = new( snk_if );
+) monitor = new( snk_if, generator.mbx );
 
 task automatic reset();
   srst <= 1'b1;
@@ -98,13 +98,23 @@ initial
 
     reset();
 
-    monitor.start_listen( SNK_READY_CHANCE, generator.mbx );
+    monitor.start_listen( SNK_READY_CHANCE );
 
 
-    $display( "Begin test: Send different lengths" );
-    generator.send_different_lengths();
+    // $display( "Begin test: Send different lengths" );
+    // generator.send_different_lengths();
+    // monitor.wait_for_ready();
+    // $display( "End test:  Send different lengths" );
+
+    $display( "Begin test: Send zero empty" );
+    generator.send_zero_empty();
     monitor.wait_for_ready();
-    $display( "End test:  Send different lengths" );
+    $display( "End test:  Send zero empty" );
+
+    $display( "Begin test: Send non zero empty" );
+    generator.send_non_zero_empty();
+    monitor.wait_for_ready();
+    $display( "End test:  Send non zero empty" );
 
     // $display( "Begin test: Send random" );
     // generator.send_random();

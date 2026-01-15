@@ -50,6 +50,28 @@ class ast_generator #(
       end
   endtask
 
+  task send_zero_empty( input int unsigned count = 100 );
+    ast_packet #( CHANNEL_W ) packet;
+
+    repeat( count )
+      begin
+        packet = new();
+        packet.randomize_data( $urandom_range( 1, 100 ) * ( DATA_W / 8 ) );
+        this.send( packet );
+      end
+  endtask
+
+  task send_non_zero_empty( input int unsigned count = 100 );
+    ast_packet #( CHANNEL_W ) packet;
+
+    repeat( count )
+      begin
+        packet = new();
+        packet.randomize_data( ( $urandom_range( 1, 100 ) * DATA_W / 8 ) + $urandom_range( 1, ( ( DATA_W / 8 ) - 1 ) ) );
+        this.send( packet );
+      end
+  endtask
+
   task send_random( input int unsigned per_count = 100 );
     ast_packet #( CHANNEL_W ) packet;
 

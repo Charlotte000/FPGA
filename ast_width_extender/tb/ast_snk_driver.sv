@@ -11,7 +11,7 @@ class ast_snk_driver #(
     .CHANNEL_W ( CHANNEL_W )
   ).snk _if;
 
-  local logic unsigned [7:0] data_buffer [$];
+  local logic [7:0] data_buffer [$];
 
   function new(
     input virtual ast_if #(
