@@ -1,6 +1,6 @@
-`include "ast_we_packet.sv"
-`include "ast_we_generator.sv"
-`include "ast_we_monitor.sv"
+`include "ast_packet.sv"
+`include "ast_generator.sv"
+`include "ast_monitor.sv"
 
 `timescale 1ns/1ns
 
@@ -13,17 +13,25 @@ module ast_we_tb #(
 
   parameter time         PERIOD      = 10ns
 );
+  localparam int unsigned SNK_READY_CHANCE = 100; // Must be in range (0, 100]
 
 bit clk;
 bit srst;
 
-ast_we_if #(
-  .DATA_IN_W   ( DATA_IN_W   ),
-  .EMPTY_IN_W  ( EMPTY_IN_W  ),
-  .CHANNEL_W   ( CHANNEL_W   ),
-  .DATA_OUT_W  ( DATA_OUT_W  ),
-  .EMPTY_OUT_W ( EMPTY_OUT_W )
-) ast_we_if (
+ast_if #(
+  .DATA_W    ( DATA_IN_W  ),
+  .EMPTY_W   ( EMPTY_IN_W ),
+  .CHANNEL_W ( CHANNEL_W  )
+) src_if (
+  .clk  ( clk  ),
+  .srst ( srst )
+);
+
+ast_if #(
+  .DATA_W    ( DATA_OUT_W  ),
+  .EMPTY_W   ( EMPTY_OUT_W ),
+  .CHANNEL_W ( CHANNEL_W   )
+) snk_if (
   .clk  ( clk  ),
   .srst ( srst )
 );
@@ -35,41 +43,37 @@ ast_width_extender #(
   .DATA_OUT_W  ( DATA_OUT_W  ),
   .EMPTY_OUT_W ( EMPTY_OUT_W )
 ) DUT (
-  .clk_i               ( ast_we_if.clk               ),
-  .srst_i              ( ast_we_if.srst              ),
+  .clk_i               ( clk                  ),
+  .srst_i              ( srst                 ),
 
-  .ast_data_i          ( ast_we_if.snk_data          ),
-  .ast_startofpacket_i ( ast_we_if.snk_startofpacket ),
-  .ast_endofpacket_i   ( ast_we_if.snk_endofpacket   ),
-  .ast_valid_i         ( ast_we_if.snk_valid         ),
-  .ast_empty_i         ( ast_we_if.snk_empty         ),
-  .ast_channel_i       ( ast_we_if.snk_channel       ),
-  .ast_ready_o         ( ast_we_if.snk_ready         ),
+  .ast_data_i          ( src_if.data          ),
+  .ast_startofpacket_i ( src_if.startofpacket ),
+  .ast_endofpacket_i   ( src_if.endofpacket   ),
+  .ast_valid_i         ( src_if.valid         ),
+  .ast_empty_i         ( src_if.empty         ),
+  .ast_channel_i       ( src_if.channel       ),
+  .ast_ready_o         ( src_if.ready         ),
 
-  .ast_data_o          ( ast_we_if.src_data          ),
-  .ast_startofpacket_o ( ast_we_if.src_startofpacket ),
-  .ast_endofpacket_o   ( ast_we_if.src_endofpacket   ),
-  .ast_valid_o         ( ast_we_if.src_valid         ),
-  .ast_empty_o         ( ast_we_if.src_empty         ),
-  .ast_channel_o       ( ast_we_if.src_channel       ),
-  .ast_ready_i         ( ast_we_if.src_ready         )
+  .ast_data_o          ( snk_if.data          ),
+  .ast_startofpacket_o ( snk_if.startofpacket ),
+  .ast_endofpacket_o   ( snk_if.endofpacket   ),
+  .ast_valid_o         ( snk_if.valid         ),
+  .ast_empty_o         ( snk_if.empty         ),
+  .ast_channel_o       ( snk_if.channel       ),
+  .ast_ready_i         ( snk_if.ready         )
 );
 
-ast_we_generator #(
-  .DATA_IN_W   ( DATA_IN_W   ),
-  .EMPTY_IN_W  ( EMPTY_IN_W  ),
-  .CHANNEL_W   ( CHANNEL_W   ),
-  .DATA_OUT_W  ( DATA_OUT_W  ),
-  .EMPTY_OUT_W ( EMPTY_OUT_W )
-) generator = new( ast_we_if.tx );
+ast_generator #(
+  .DATA_W    ( DATA_IN_W  ),
+  .EMPTY_W   ( EMPTY_IN_W ),
+  .CHANNEL_W ( CHANNEL_W  )
+) generator = new( src_if );
 
-ast_we_monitor #(
-  .DATA_IN_W   ( DATA_IN_W   ),
-  .EMPTY_IN_W  ( EMPTY_IN_W  ),
-  .CHANNEL_W   ( CHANNEL_W   ),
-  .DATA_OUT_W  ( DATA_OUT_W  ),
-  .EMPTY_OUT_W ( EMPTY_OUT_W )
-) monitor = new( ast_we_if.rx );
+ast_monitor #(
+  .DATA_W    ( DATA_OUT_W  ),
+  .EMPTY_W   ( EMPTY_OUT_W ),
+  .CHANNEL_W ( CHANNEL_W   )
+) monitor = new( snk_if );
 
 task automatic reset();
   srst <= 1'b1;
@@ -85,8 +89,8 @@ endtask
 
 initial
   begin
-    ast_we_if.snk_valid <= 1'b0;
-    ast_we_if.src_ready <= 1'b1;
+    src_if.valid <= 1'b0;
+    snk_if.ready <= 1'b1;
 
     fork
       clock();
@@ -94,10 +98,8 @@ initial
 
     reset();
 
-    fork
-      monitor.start_listen( generator.mbx );
-      generator.start_send_ready( 100 );
-    join_none
+    monitor.start_listen( SNK_READY_CHANCE, generator.mbx );
+
 
     $display( "Begin test: Send different lengths" );
     generator.send_different_lengths();

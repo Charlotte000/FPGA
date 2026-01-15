@@ -1,34 +1,28 @@
-`include "ast_we_packet.sv"
-`include "ast_we_rx_driver.sv"
+`include "ast_packet.sv"
+`include "ast_snk_driver.sv"
 
-class ast_we_monitor #(
-  parameter int unsigned DATA_IN_W,
-  parameter int unsigned EMPTY_IN_W,
-  parameter int unsigned CHANNEL_W,
-  parameter int unsigned DATA_OUT_W,
-  parameter int unsigned EMPTY_OUT_W
+class ast_monitor #(
+  parameter int unsigned DATA_W,
+  parameter int unsigned EMPTY_W,
+  parameter int unsigned CHANNEL_W
 );
-  local ast_we_rx_driver #(
-    .DATA_IN_W   ( DATA_IN_W   ),
-    .EMPTY_IN_W  ( EMPTY_IN_W  ),
-    .CHANNEL_W   ( CHANNEL_W   ),
-    .DATA_OUT_W  ( DATA_OUT_W  ),
-    .EMPTY_OUT_W ( EMPTY_OUT_W )
+  local ast_snk_driver #(
+    .DATA_W    ( DATA_W    ),
+    .EMPTY_W   ( EMPTY_W   ),
+    .CHANNEL_W ( CHANNEL_W )
   ) driver;
 
   function new(
-    input virtual ast_we_if #(
-      .DATA_IN_W   ( DATA_IN_W   ),
-      .EMPTY_IN_W  ( EMPTY_IN_W  ),
-      .CHANNEL_W   ( CHANNEL_W   ),
-      .DATA_OUT_W  ( DATA_OUT_W  ),
-      .EMPTY_OUT_W ( EMPTY_OUT_W )
-    ).rx _if
+    input virtual ast_if #(
+      .DATA_W    ( DATA_W    ),
+      .EMPTY_W   ( EMPTY_W   ),
+      .CHANNEL_W ( CHANNEL_W )
+    ).snk _if
   );
     this.driver = new( _if );
   endfunction
 
-  function bit check( input bit status, input string error_msg );
+  local function bit check( input bit status, input string error_msg );
     assert( status )
     else
       begin
@@ -43,13 +37,18 @@ class ast_we_monitor #(
     wait( this.driver.mbx.num() == 0 );
   endtask
 
-  task start_listen( input mailbox #( ast_we_packet #( CHANNEL_W ) ) tx_mbx );
+  task start_listen( input int unsigned ready_chance, input mailbox #( ast_packet #( CHANNEL_W ) ) tx_mbx );
     fork
-      this.driver.rx();
+      // Start driver
+      this.driver.start_recieve_packet();
 
+      // Start send ready
+      this.driver.start_send_ready( ready_chance );
+
+      // Start monitoring
       begin
-        ast_we_packet #( CHANNEL_W ) rx_packet;
-        ast_we_packet #( CHANNEL_W ) tx_packet;
+        ast_packet #( CHANNEL_W ) rx_packet;
+        ast_packet #( CHANNEL_W ) tx_packet;
         forever
           begin
             this.driver.mbx.get( rx_packet );
@@ -72,7 +71,7 @@ class ast_we_monitor #(
               end
           end
       end
-    join_any
+    join_none
   endtask
 
 endclass
