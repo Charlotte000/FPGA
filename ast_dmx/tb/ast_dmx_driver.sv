@@ -112,10 +112,12 @@ class ast_dmx_driver #(
     ast_dmx_packet #( CHANNEL_W, DIR_SEL_W ) packet;
     forever
       begin
-        this.gen2drv.get( packet );
+        this.gen2drv.peek( packet ); // Dont remove yet
         this.drv2scb.put( packet.copy() );
 
         this.send_packet( packet );
+
+        this.gen2drv.get( packet ); // Now remove
       end
   endtask
 

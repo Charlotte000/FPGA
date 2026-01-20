@@ -79,6 +79,7 @@ class ast_dmx_environment #(
       this.scoreboard.run();
     join_none
 
+    // Wait for the first packet
     #10_000;
 
     repeat( timeout_ticks - 10_000 )
