@@ -25,17 +25,6 @@ class ast_dmx_monitor #(
     this.mon2scb = mon2scb;
   endfunction
 
-  local static function bit check( input bit status, input string error_msg );
-    assert( status )
-    else
-      begin
-        $display( "%8d ns: %s", $time, error_msg );
-        return 1'b0;
-      end
-
-    return 1'b1;
-  endfunction
-
   local task start_listen(
     input virtual ast_dmx_if #(
       .DATA_W    ( DATA_W    ),
@@ -67,11 +56,10 @@ class ast_dmx_monitor #(
 
         if( _if.snk_cb.startofpacket )
           begin
-            if( !ast_dmx_monitor::check(
-              ( data_buffer.size() == 0 ),
-              $sformatf( "unexpected ast_startofpacket_o (dir=%0d)", dir )
-            ) )
+            assert( data_buffer.size() == 0 )
+            else
               begin
+                $display( "%8d ns: unexpected ast_startofpacket_o (dir=%0d)", $time, dir );
                 data_buffer.delete();
                 @( _if.snk_cb );
                 continue;

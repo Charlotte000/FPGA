@@ -54,17 +54,6 @@ class ast_dmx_environment #(
     this.scoreboard = new( this.drv2scb, this.mon2scb );
   endfunction
 
-  local static function bit check( input bit status, input string error_msg );
-    assert( status )
-    else
-      begin
-        $display( "%8d ns: %s", $time, error_msg );
-        return 1'b0;
-      end
-
-    return 1'b1;
-  endfunction
-
   task run( input int unsigned timeout_ticks = 10_000_000 );
     fork : run
       this.generator.send_different_lengths();
@@ -92,14 +81,22 @@ class ast_dmx_environment #(
 
     disable run;
 
-    void'( ast_dmx_environment::check(
-      ( this.gen2drv.num() == 0 ),
-      $sformatf( "Not all packets were sent (%0d) (you might want to increase timeout_ticks)", this.gen2drv.num() )
-    ) );
-    void'( ast_dmx_environment::check(
-      ( ( this.drv2scb.num() == 0 ) && ( this.mon2scb.num() == 0 ) ),
-      $sformatf( "Not all packets were checked (%0d/%0d)", this.drv2scb.num(), this.mon2scb.num() )
-    ) );
+    assert( this.gen2drv.num() == 0 )
+    else
+      $display(
+        "%8d ns: Not all packets were sent (%0d) (you might want to increase timeout_ticks)",
+        $time,
+        this.gen2drv.num()
+      );
+
+    assert( ( this.drv2scb.num() == 0 ) && ( this.mon2scb.num() == 0 ) )
+    else
+      $display(
+        "%8d ns: Not all packets were checked (%0d/%0d)",
+        $time,
+        this.drv2scb.num(),
+        this.mon2scb.num()
+      );
   endtask
 
 endclass
