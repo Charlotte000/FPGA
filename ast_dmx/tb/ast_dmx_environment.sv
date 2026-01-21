@@ -54,7 +54,7 @@ class ast_dmx_environment #(
     this.scoreboard = new( this.drv2scb, this.mon2scb );
   endfunction
 
-  task run( input int unsigned timeout_ticks = 10_000_000 );
+  task run( input int unsigned timeout = 10_000_000 );
     fork : run
       this.generator.send_different_lengths();
       // this.generator.send_zero_empty();
@@ -71,7 +71,8 @@ class ast_dmx_environment #(
     // Wait for the first packet
     #10_000;
 
-    repeat( timeout_ticks - 10_000 )
+    // Timeout
+    repeat( timeout )
       begin
         if( ( this.gen2drv.num() == 0 ) && ( this.drv2scb.num() == 0 ) && ( this.mon2scb.num() == 0 ) )
           break;
@@ -81,15 +82,16 @@ class ast_dmx_environment #(
 
     disable run;
 
+    // Check remaining packets
     assert( this.gen2drv.num() == 0 )
     else
       $display(
-        "%8d ns: Not all packets were sent (%0d) (you might want to increase timeout_ticks)",
+        "%8d ns: Not all packets were sent (%0d) (you might want to increase timeout)",
         $time,
         this.gen2drv.num()
       );
 
-    assert( ( this.drv2scb.num() == 0 ) && ( this.mon2scb.num() == 0 ) )
+    assert( this.monitor.checkFinished() && ( this.drv2scb.num() == 0 ) && ( this.mon2scb.num() == 0 ) )
     else
       $display(
         "%8d ns: Not all packets were checked (%0d/%0d)",

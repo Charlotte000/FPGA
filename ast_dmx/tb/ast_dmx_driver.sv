@@ -54,6 +54,30 @@ class ast_dmx_driver #(
     return data;
   endfunction
 
+  local task start_check_unknown();
+    forever
+      begin
+        assert( !$isunknown( this._if.src_cb.ready ) )
+        else
+          $display( "%8d ns: ast_ready_o is unknown", $time );
+
+        @( this._if.src_cb );
+      end
+  endtask
+
+  local task start_send_packets();
+    ast_dmx_packet #( CHANNEL_W, DIR_SEL_W ) packet;
+    forever
+      begin
+        this.gen2drv.peek( packet ); // Dont remove yet
+        this.drv2scb.put( packet.copy() );
+
+        this.send_packet( packet );
+
+        this.gen2drv.get( packet ); // Now remove
+      end
+  endtask
+
   function void reset();
     this._if_dir.src_cb.dir       <= '0;
     this._if.src_cb.data          <= 'x;
@@ -73,7 +97,7 @@ class ast_dmx_driver #(
       begin
         if( this._if.src_cb.ready && ( $urandom_range(1, 100) <= packet.write_chance ) )
           begin
-            this._if_dir.src_cb.dir       <= ( sop ) ? ( packet.dir ) : ( '0 ); // dir only at sop
+            this._if_dir.src_cb.dir       <= ( sop ) ? ( packet.dir ) : ( 'x ); // dir only at sop
             this._if.src_cb.data          <= getWord( packet, empty );
             this._if.src_cb.startofpacket <= sop;
             this._if.src_cb.endofpacket   <= ( packet.data.size() == 0 );
@@ -109,16 +133,10 @@ class ast_dmx_driver #(
   endtask
 
   task run();
-    ast_dmx_packet #( CHANNEL_W, DIR_SEL_W ) packet;
-    forever
-      begin
-        this.gen2drv.peek( packet ); // Dont remove yet
-        this.drv2scb.put( packet.copy() );
-
-        this.send_packet( packet );
-
-        this.gen2drv.get( packet ); // Now remove
-      end
+    fork
+      this.start_check_unknown();
+      this.start_send_packets();
+    join_none
   endtask
 
 endclass
