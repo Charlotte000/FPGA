@@ -296,3 +296,33 @@ FPGA labs
 | ast_empty_o         | output    | EMPTY_WIDTH   | How many empty bytes/characters are in a word                |
 | ast_channel_o       | output    | CHANNEL_WIDTH | Accompanying information                                     |
 | ast_ready_i         | input     | 1             | Feedback, to stop the output stream                          |
+
+## Task 4 Byte increment
+[byte_inc](./byte_inc)
+
+[Specification](https://schaumont.dyn.wpi.edu/ece4530f19/pdf/mnl_avalon_spec.pdf)
+
+| Parameter  | Comment                  |
+|------------|--------------------------|
+| DATA_WIDTH | The width of the data    |
+| ADDR_WIDTH | The width of the address |
+| BYTE_CNT   | The width of the channel |
+
+| Signal                 | Direction | Bit size    | Comment                                                    |
+|------------------------|-----------|-------------|------------------------------------------------------------|
+| clk_i                  | input     | 1           | Posedge-triggered clock                                    |
+| srst_i                 | input     | 1           | Synchronous reset                                          |
+| base_addr_i            | input     | ADDR_WIDTH  | The base address from where the reading starts             |
+| length_i               | input     | ADDR_WIDTH  | Number of bytes to increment                               |
+| run_i                  | input     | 1           | The start strobe of the module                             |
+| waitrequest_o          | output    | 1           | A signal indicating that the module is busy                |
+| amm_rd_address_o       | output    | ADDR_WIDTH  | The address bus for reading                                |
+| amm_rd_read_o          | output    | 1           | Read request signal                                        |
+| amm_rd_readdata_i      | input     | DATA_WIDTH  | Read data                                                  |
+| amm_rd_readdatavalid_i | input     | 1           | A signal of the validity of the read data                  |
+| amm_rd_waitrequest_i   | input     | 1           | A waiting signal for the read request to be accepted       |
+| amm_wr_address_o       | output    | ADDR_WIDTH  | The address bus for writing                                |
+| amm_wr_write_o         | output    | 1           | Recording request signal                                   |
+| amm_wr_writedata_i     | output    | DATA_WIDTH  | Write data                                                 |
+| amm_wr_byteenable_o    | output    | BYTE_CNT    | The validity of each of the bytes in the write transaction |
+| amm_wr_waitrequest_i   | input     | 1           | Ready acceptance of the recording request                  |
