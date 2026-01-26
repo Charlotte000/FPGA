@@ -5,14 +5,14 @@ class amm_monitor_wr #(
   parameter int unsigned ADDR_WIDTH,
   parameter int unsigned BYTE_CNT
 );
-  local virtual amm_wr_if #(
+  local virtual amm_if #(
     .DATA_WIDTH ( DATA_WIDTH ),
     .ADDR_WIDTH ( ADDR_WIDTH ),
     .BYTE_CNT   ( BYTE_CNT   )
   ) wr_if;
 
   function new(
-    input virtual amm_wr_if #(
+    input virtual amm_if #(
       .DATA_WIDTH ( DATA_WIDTH ),
       .ADDR_WIDTH ( ADDR_WIDTH ),
       .BYTE_CNT   ( BYTE_CNT   )
@@ -39,7 +39,7 @@ class amm_monitor_wr #(
         else $display( "%8d ns: %25s is unknown", $time, "amm_wr_address_o" );
 
         // amm_wr_writedata_o
-        assert( ( this.wr_if.mon_cb.write === 1'b1 ) -> ( !$isunknown( this.wr_if.mon_cb.writedata ) ) )
+        assert( ( this.wr_if.mon_cb.write === 1'b1 ) -> ( !$isunknown( this.wr_if.mon_cb.data ) ) )
         else $display( "%8d ns: %25s is unknown", $time, "amm_wr_writedata_o" );
 
         // amm_wr_byteenable_o

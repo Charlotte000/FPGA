@@ -55,11 +55,12 @@ class byte_inc_environment #(
     input virtual byte_inc_if #(
       .ADDR_WIDTH ( ADDR_WIDTH )
     ) set_if,
-    input virtual amm_rd_if #(
+    input virtual amm_if #(
       .DATA_WIDTH ( DATA_WIDTH ),
-      .ADDR_WIDTH ( ADDR_WIDTH )
+      .ADDR_WIDTH ( ADDR_WIDTH ),
+      .BYTE_CNT   ( BYTE_CNT   )
     ) rd_if,
-    input virtual amm_wr_if #(
+    input virtual amm_if #(
       .DATA_WIDTH ( DATA_WIDTH ),
       .ADDR_WIDTH ( ADDR_WIDTH ),
       .BYTE_CNT   ( BYTE_CNT   )

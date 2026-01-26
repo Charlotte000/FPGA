@@ -16,7 +16,7 @@ class amm_agent_wr #(
   ) mon;
 
   function new(
-    input virtual amm_wr_if #(
+    input virtual amm_if #(
       .DATA_WIDTH ( DATA_WIDTH ),
       .ADDR_WIDTH ( ADDR_WIDTH ),
       .BYTE_CNT   ( BYTE_CNT   )

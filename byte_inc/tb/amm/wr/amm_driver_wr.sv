@@ -5,7 +5,7 @@ class amm_driver_wr #(
   parameter int unsigned ADDR_WIDTH,
   parameter int unsigned BYTE_CNT
 );
-  local virtual amm_wr_if #(
+  local virtual amm_if #(
     .DATA_WIDTH ( DATA_WIDTH ),
     .ADDR_WIDTH ( ADDR_WIDTH ),
     .BYTE_CNT   ( BYTE_CNT   )
@@ -18,7 +18,7 @@ class amm_driver_wr #(
   ) ram;
 
   function new(
-    input virtual amm_wr_if #(
+    input virtual amm_if #(
       .DATA_WIDTH ( DATA_WIDTH ),
       .ADDR_WIDTH ( ADDR_WIDTH ),
       .BYTE_CNT   ( BYTE_CNT   )
@@ -34,22 +34,22 @@ class amm_driver_wr #(
   endfunction
 
   local task wr_delay();
-    this.wr_if.cb.waitrequest <= 1'b1;
+    this.wr_if.wr_cb.waitrequest <= 1'b1;
     repeat( get_wr_wait_count() )
-      @( this.wr_if.cb );
-    this.wr_if.cb.waitrequest <= 1'b0;
+      @( this.wr_if.wr_cb );
+    this.wr_if.wr_cb.waitrequest <= 1'b0;
   endtask
 
   task run();
     forever
       begin
-        this.wr_if.cb.waitrequest <= 1'b0;
+        this.wr_if.wr_cb.waitrequest <= 1'b0;
 
-        if( this.wr_if.cb.write )
+        if( this.wr_if.wr_cb.write )
           begin
-            logic [ADDR_WIDTH-1:0] addr       = this.wr_if.cb.address;
-            logic [DATA_WIDTH-1:0] data       = this.wr_if.cb.writedata;
-            logic [BYTE_CNT-1:0]   byteenable = this.wr_if.cb.byteenable;
+            logic [ADDR_WIDTH-1:0] addr       = this.wr_if.wr_cb.address;
+            logic [DATA_WIDTH-1:0] data       = this.wr_if.wr_cb.data;
+            logic [BYTE_CNT-1:0]   byteenable = this.wr_if.wr_cb.byteenable;
 
             this.wr_delay();
 
@@ -57,7 +57,7 @@ class amm_driver_wr #(
             this.ram.write( addr, data, byteenable );
           end
 
-        @( this.wr_if.cb );
+        @( this.wr_if.wr_cb );
       end
   endtask
 

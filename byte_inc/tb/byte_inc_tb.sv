@@ -19,12 +19,13 @@ byte_inc_if #(
   .ADDR_WIDTH ( ADDR_WIDTH )
 ) set_if ( clk );
 
-amm_rd_if #(
+amm_if #(
   .DATA_WIDTH ( DATA_WIDTH ),
-  .ADDR_WIDTH ( ADDR_WIDTH )
+  .ADDR_WIDTH ( ADDR_WIDTH ),
+  .BYTE_CNT   ( BYTE_CNT   )
 ) rd_if ( clk );
 
-amm_wr_if #(
+amm_if #(
   .DATA_WIDTH ( DATA_WIDTH ),
   .ADDR_WIDTH ( ADDR_WIDTH ),
   .BYTE_CNT   ( BYTE_CNT   )
@@ -35,22 +36,22 @@ byte_inc #(
   .ADDR_WIDTH ( ADDR_WIDTH ),
   .BYTE_CNT   ( BYTE_CNT   )
 ) DUT (
-  .clk_i                  ( clk                 ),
-  .srst_i                 ( srst                ),
-  .base_addr_i            ( set_if.base_addr    ),
-  .length_i               ( set_if.length       ),
-  .run_i                  ( set_if.run          ),
-  .waitrequest_o          ( set_if.waitrequest  ),
-  .amm_rd_address_o       ( rd_if.address       ),
-  .amm_rd_read_o          ( rd_if.read          ),
-  .amm_rd_readdata_i      ( rd_if.readdata      ),
-  .amm_rd_readdatavalid_i ( rd_if.readdatavalid ),
-  .amm_rd_waitrequest_i   ( rd_if.waitrequest   ),
-  .amm_wr_address_o       ( wr_if.address       ),
-  .amm_wr_write_o         ( wr_if.write         ),
-  .amm_wr_writedata_o     ( wr_if.writedata     ),
-  .amm_wr_byteenable_o    ( wr_if.byteenable    ),
-  .amm_wr_waitrequest_i   ( wr_if.waitrequest   )
+  .clk_i                  ( clk                ),
+  .srst_i                 ( srst               ),
+  .base_addr_i            ( set_if.base_addr   ),
+  .length_i               ( set_if.length      ),
+  .run_i                  ( set_if.run         ),
+  .waitrequest_o          ( set_if.waitrequest ),
+  .amm_rd_address_o       ( rd_if.address      ),
+  .amm_rd_read_o          ( rd_if.read         ),
+  .amm_rd_readdata_i      ( rd_if.data         ),
+  .amm_rd_readdatavalid_i ( rd_if.datavalid    ),
+  .amm_rd_waitrequest_i   ( rd_if.waitrequest  ),
+  .amm_wr_address_o       ( wr_if.address      ),
+  .amm_wr_write_o         ( wr_if.write        ),
+  .amm_wr_writedata_o     ( wr_if.data         ),
+  .amm_wr_byteenable_o    ( wr_if.byteenable   ),
+  .amm_wr_waitrequest_i   ( wr_if.waitrequest  )
 );
 
 byte_inc_environment #(
@@ -72,10 +73,10 @@ initial
 
 initial
   begin
-    set_if.run          <= 1'b0;
-    rd_if.readdatavalid <= 1'b0;
-    rd_if.waitrequest   <= 1'b0;
-    wr_if.waitrequest   <= 1'b0;
+    set_if.run        <= 1'b0;
+    rd_if.datavalid   <= 1'b0;
+    rd_if.waitrequest <= 1'b0;
+    wr_if.waitrequest <= 1'b0;
 
     reset();
 

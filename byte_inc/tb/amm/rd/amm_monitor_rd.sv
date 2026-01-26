@@ -2,17 +2,20 @@ import amm_package::*;
 
 class amm_monitor_rd #(
   parameter int unsigned DATA_WIDTH,
-  parameter int unsigned ADDR_WIDTH
+  parameter int unsigned ADDR_WIDTH,
+  parameter int unsigned BYTE_CNT
 );
-  local virtual amm_rd_if #(
+  local virtual amm_if #(
     .DATA_WIDTH ( DATA_WIDTH ),
-    .ADDR_WIDTH ( ADDR_WIDTH )
+    .ADDR_WIDTH ( ADDR_WIDTH ),
+    .BYTE_CNT   ( BYTE_CNT   )
   ) rd_if;
 
   function new(
-    input virtual amm_rd_if #(
+    input virtual amm_if #(
       .DATA_WIDTH ( DATA_WIDTH ),
-      .ADDR_WIDTH ( ADDR_WIDTH )
+      .ADDR_WIDTH ( ADDR_WIDTH ),
+      .BYTE_CNT   ( BYTE_CNT   )
     ) rd_if
   );
     this.rd_if = rd_if;
@@ -24,7 +27,7 @@ class amm_monitor_rd #(
         @( this.rd_if.mon_cb );
 
         // amm_rd_readdatavalid_i
-        assert( !$isunknown( this.rd_if.mon_cb.readdatavalid ) )
+        assert( !$isunknown( this.rd_if.mon_cb.datavalid ) )
         else $display( "%8d ns: %25s is unknown", $time, "amm_rd_readdatavalid_i" );
 
         // amm_rd_waitrequest_i
@@ -32,7 +35,7 @@ class amm_monitor_rd #(
         else $display( "%8d ns: %25s is unknown", $time, "amm_rd_waitrequest_i" );
 
         // amm_rd_readdata_i
-        assert( ( this.rd_if.mon_cb.readdatavalid === 1'b1 ) -> ( !$isunknown( this.rd_if.mon_cb.readdata ) ) )
+        assert( ( this.rd_if.mon_cb.datavalid === 1'b1 ) -> ( !$isunknown( this.rd_if.mon_cb.data ) ) )
         else $display( "%8d ns: %25s is unknown", $time, "amm_rd_readdata_i" );
 
         // amm_rd_read_o

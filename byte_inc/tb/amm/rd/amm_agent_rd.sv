@@ -11,13 +11,15 @@ class amm_agent_rd #(
 
   local amm_monitor_rd #(
     .DATA_WIDTH ( DATA_WIDTH ),
-    .ADDR_WIDTH ( ADDR_WIDTH )
+    .ADDR_WIDTH ( ADDR_WIDTH ),
+    .BYTE_CNT   ( BYTE_CNT   )
   ) mon;
 
   function new(
-    input virtual amm_rd_if #(
+    input virtual amm_if #(
       .DATA_WIDTH ( DATA_WIDTH ),
-      .ADDR_WIDTH ( ADDR_WIDTH )
+      .ADDR_WIDTH ( ADDR_WIDTH ),
+      .BYTE_CNT   ( BYTE_CNT   )
     ) rd_if,
     input amm_ram #(
       .DATA_WIDTH ( DATA_WIDTH ),
