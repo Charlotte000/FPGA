@@ -77,8 +77,10 @@ class byte_inc_environment #(
   endfunction
 
   task run( input int unsigned timeout = 10_000_000 );
-    amm_package::ram_speed = FAST; // RANDOM, SLOW, FAST
-    this.ram.fill_data_random();   // .fill_data_random(), .fill_data_plain(), .fill_data_same( val )
+    amm_package::ram_speed             = FAST; // RANDOM, SLOW, FAST
+    amm_package::RD_WAITREQUEST_CHANCE = 50;   // [0, 100)
+    amm_package::WR_WAITREQUEST_CHANCE = 0;    // [0, 100)
+    this.ram.fill_data_random();               // .fill_data_random(), .fill_data_plain(), .fill_data_same( val )
 
     fork : run
       this.generator.send_different_lengths();

@@ -48,31 +48,9 @@ class amm_monitor_wr #(
       end
   endtask
 
-  local task check_response();
-    forever
-      begin
-        if( this.wr_if.mon_cb.write && ( !this.wr_if.mon_cb.waitrequest ) )
-          begin
-            int unsigned wait_count;
-            for( wait_count = 0; wait_count < WR_WAIT_MAX; wait_count++ )
-              begin
-                @( this.wr_if.mon_cb );
-                if( this.wr_if.mon_cb.waitrequest === 1'b0 )
-                  break;
-              end
-
-            assert( ( WR_WAIT_MIN <= wait_count ) && ( wait_count <= WR_WAIT_MAX ) )
-            else $display( "%8d ns: write request timeout (%0d)", $time, wait_count );
-          end
-
-        @( this.wr_if.mon_cb );
-      end
-  endtask
-
   task run();
     fork
       this.check_unknown();
-      this.check_response();
     join_none
   endtask
 

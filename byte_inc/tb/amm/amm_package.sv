@@ -7,11 +7,12 @@ enum
   RANDOM
 } ram_speed = RANDOM;
 
-int unsigned RD_WAIT_MIN = 1;
-int unsigned RD_WAIT_MAX = 64;
+int unsigned RD_WAIT_MIN           = 1;
+int unsigned RD_WAIT_MAX           = 64;
+int unsigned RD_WAITREQUEST_CHANCE = 50;
 
-int unsigned WR_WAIT_MIN = 1;
-int unsigned WR_WAIT_MAX = 1;
+int unsigned WR_WAIT               = 1;
+int unsigned WR_WAITREQUEST_CHANCE = 50;
 
 function int unsigned get_rd_wait_count();
   case( ram_speed )
@@ -23,19 +24,6 @@ function int unsigned get_rd_wait_count();
       return $urandom_range( RD_WAIT_MIN, RD_WAIT_MAX );
     default:
       return $urandom_range( RD_WAIT_MIN, RD_WAIT_MAX );
-  endcase
-endfunction
-
-function int unsigned get_wr_wait_count();
-  case( ram_speed )
-    FAST:
-      return WR_WAIT_MIN;
-    SLOW:
-      return WR_WAIT_MAX;
-    RANDOM:
-      return $urandom_range( WR_WAIT_MIN, WR_WAIT_MAX );
-    default:
-      return $urandom_range( WR_WAIT_MIN, WR_WAIT_MAX );
   endcase
 endfunction
 

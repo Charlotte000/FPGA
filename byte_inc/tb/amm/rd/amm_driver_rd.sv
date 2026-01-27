@@ -34,36 +34,55 @@ class amm_driver_rd #(
   endfunction
 
   local function void reset();
-    this.rd_if.rd_cb.data        <= 'x;
-    this.rd_if.rd_cb.datavalid   <= 1'b0;
-    this.rd_if.rd_cb.waitrequest <= 1'b0;
+    this.rd_if.rd_cb.data      <= 'x;
+    this.rd_if.rd_cb.datavalid <= 1'b0;
   endfunction
 
-  local task rd_delay();
-    this.rd_if.rd_cb.waitrequest <= 1'b1;
-    repeat( get_rd_wait_count() )
-      @( this.rd_if.rd_cb );
-    this.rd_if.rd_cb.waitrequest <= 1'b0;
+  local task set_waitrequest();
+    forever
+      begin
+        this.rd_if.rd_cb.waitrequest <= ( $urandom_range( 1, 100 ) <= RD_WAITREQUEST_CHANCE );
+        @( this.rd_if.rd_cb );
+      end
   endtask
 
-  task run();
-    forever
+  local task set_read();
+    typedef struct {
+      int unsigned                  timestamp;
+      logic        [DATA_WIDTH-1:0] data;
+    } read_task;
+    read_task read_queue [$];
+
+    for( int unsigned timestamp = 0; 1; timestamp++ )
       begin
         this.reset();
 
-        if( this.rd_if.rd_cb.read )
+        // Push read tasks
+        if( this.rd_if.rd_cb.read && ( !this.rd_if.waitrequest ) )
           begin
-            logic [ADDR_WIDTH-1:0] addr = this.rd_if.rd_cb.address;
+            read_task rt = '{
+              timestamp: ( timestamp + get_rd_wait_count() ),
+              data:      this.ram.read( this.rd_if.rd_cb.address )
+            };
+            read_queue.push_back( rt );
+          end
 
-            this.rd_delay();
-
-            // Read
-            this.rd_if.rd_cb.data      <= this.ram.read( addr );
+        // Pop read tasks
+        if( ( read_queue.size() > 0 ) && ( read_queue[0].timestamp <= timestamp ) )
+          begin
+            this.rd_if.rd_cb.data      <= read_queue.pop_front().data;
             this.rd_if.rd_cb.datavalid <= 1'b1;
           end
 
         @( this.rd_if.rd_cb );
       end
+  endtask
+
+  task run();
+    fork
+      this.set_waitrequest();
+      this.set_read();
+    join_none
   endtask
 
 endclass
