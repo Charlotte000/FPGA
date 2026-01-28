@@ -3,15 +3,15 @@ class amm_ram #(
   parameter int unsigned ADDR_WIDTH,
   parameter int unsigned BYTE_CNT
 );
-  localparam int unsigned DATA_MAX = ( ( 2 ** DATA_WIDTH ) - 1 );
-  localparam int unsigned ADDR_MAX = ( ( 2 ** ADDR_WIDTH ) - 1 );
-  localparam int unsigned BYTE_MAX = ( ( 2 ** BYTE_CNT   ) - 1 );
+  localparam longint unsigned DATA_MAX = ( ( 2 ** DATA_WIDTH ) - 1 );
+  localparam longint unsigned ADDR_MAX = ( ( 2 ** ADDR_WIDTH ) - 1 );
+  localparam longint unsigned BYTE_MAX = ( ( 2 ** BYTE_CNT   ) - 1 );
 
   local logic [DATA_WIDTH-1:0] data [ADDR_MAX:0];
 
   function void fill_data_random();
     foreach( this.data[i] )
-      this.data[i] = $urandom_range( 0, DATA_MAX );
+      this.data[i] = { $urandom(), $urandom() };
   endfunction
 
   function void fill_data_plain();

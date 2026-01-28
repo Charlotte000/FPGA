@@ -49,7 +49,7 @@ class amm_driver_rd #(
   local task set_read();
     typedef struct {
       int unsigned                  timestamp;
-      logic        [DATA_WIDTH-1:0] data;
+      logic        [ADDR_WIDTH-1:0] address;
     } read_task;
     read_task read_queue [$];
 
@@ -62,7 +62,7 @@ class amm_driver_rd #(
           begin
             read_task rt = '{
               timestamp: ( timestamp + get_rd_wait_count() ),
-              data:      this.ram.read( this.rd_if.rd_cb.address )
+              address:   this.rd_if.rd_cb.address
             };
             read_queue.push_back( rt );
           end
@@ -70,7 +70,8 @@ class amm_driver_rd #(
         // Pop read tasks
         if( ( read_queue.size() > 0 ) && ( read_queue[0].timestamp <= timestamp ) )
           begin
-            this.rd_if.rd_cb.data      <= read_queue.pop_front().data;
+            read_task rt = read_queue.pop_front();
+            this.rd_if.rd_cb.data      <= this.ram.read( rt.address );
             this.rd_if.rd_cb.datavalid <= 1'b1;
           end
 
