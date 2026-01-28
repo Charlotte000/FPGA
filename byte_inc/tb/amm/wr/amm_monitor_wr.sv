@@ -39,7 +39,7 @@ class amm_monitor_wr #(
         else $display( "%8d ns: %25s is unknown", $time, "amm_wr_address_o" );
 
         // amm_wr_writedata_o
-        assert( ( this.wr_if.mon_cb.write === 1'b1 ) -> ( !$isunknown( this.wr_if.mon_cb.data ) ) )
+        assert( ( this.wr_if.mon_cb.write === 1'b1 ) -> ( !$isunknown( this.wr_if.mon_cb.writedata ) ) )
         else $display( "%8d ns: %25s is unknown", $time, "amm_wr_writedata_o" );
 
         // amm_wr_byteenable_o

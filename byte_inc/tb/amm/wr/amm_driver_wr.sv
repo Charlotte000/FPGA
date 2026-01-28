@@ -36,8 +36,8 @@ class amm_driver_wr #(
   local task set_waitrequest();
     forever
       begin
-        this.wr_if.wr_cb.waitrequest <= ( $urandom_range( 1, 100 ) <= WR_WAITREQUEST_CHANCE );
-        @( this.wr_if.wr_cb );
+        this.wr_if.cb.waitrequest <= ( $urandom_range( 1, 100 ) <= WR_WAITREQUEST_CHANCE );
+        @( this.wr_if.cb );
       end
   endtask
 
@@ -53,13 +53,13 @@ class amm_driver_wr #(
     for( int unsigned timestamp = 0; 1; timestamp++ )
       begin
         // Push write tasks
-        if( this.wr_if.wr_cb.write && ( !this.wr_if.waitrequest ) )
+        if( this.wr_if.cb.write && ( !this.wr_if.waitrequest ) )
           begin
             write_task wt = '{
               timestamp:  ( timestamp + WR_WAIT ),
-              data:       this.wr_if.wr_cb.data,
-              address:    this.wr_if.wr_cb.address,
-              byteenable: this.wr_if.wr_cb.byteenable
+              data:       this.wr_if.cb.writedata,
+              address:    this.wr_if.cb.address,
+              byteenable: this.wr_if.cb.byteenable
             };
             write_queue.push_back( wt );
           end
@@ -71,7 +71,7 @@ class amm_driver_wr #(
             this.ram.write( wt.address, wt.data, wt.byteenable );
           end
 
-        @( this.wr_if.wr_cb );
+        @( this.wr_if.cb );
       end
   endtask
 

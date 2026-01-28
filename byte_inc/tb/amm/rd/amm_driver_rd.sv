@@ -34,15 +34,15 @@ class amm_driver_rd #(
   endfunction
 
   local function void reset();
-    this.rd_if.rd_cb.data      <= 'x;
-    this.rd_if.rd_cb.datavalid <= 1'b0;
+    this.rd_if.cb.readdata      <= 'x;
+    this.rd_if.cb.readdatavalid <= 1'b0;
   endfunction
 
   local task set_waitrequest();
     forever
       begin
-        this.rd_if.rd_cb.waitrequest <= ( $urandom_range( 1, 100 ) <= RD_WAITREQUEST_CHANCE );
-        @( this.rd_if.rd_cb );
+        this.rd_if.cb.waitrequest <= ( $urandom_range( 1, 100 ) <= RD_WAITREQUEST_CHANCE );
+        @( this.rd_if.cb );
       end
   endtask
 
@@ -58,11 +58,11 @@ class amm_driver_rd #(
         this.reset();
 
         // Push read tasks
-        if( this.rd_if.rd_cb.read && ( !this.rd_if.waitrequest ) )
+        if( this.rd_if.cb.read && ( !this.rd_if.waitrequest ) )
           begin
             read_task rt = '{
               timestamp: ( timestamp + get_rd_wait_count() ),
-              address:   this.rd_if.rd_cb.address
+              address:   this.rd_if.cb.address
             };
             read_queue.push_back( rt );
           end
@@ -71,11 +71,11 @@ class amm_driver_rd #(
         if( ( read_queue.size() > 0 ) && ( read_queue[0].timestamp <= timestamp ) )
           begin
             read_task rt = read_queue.pop_front();
-            this.rd_if.rd_cb.data      <= this.ram.read( rt.address );
-            this.rd_if.rd_cb.datavalid <= 1'b1;
+            this.rd_if.cb.readdata      <= this.ram.read( rt.address );
+            this.rd_if.cb.readdatavalid <= 1'b1;
           end
 
-        @( this.rd_if.rd_cb );
+        @( this.rd_if.cb );
       end
   endtask
 
